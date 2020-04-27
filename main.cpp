@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
-#include <iostream>
 #include <ncurses.h>
+#include <iostream>
 #include "version.h"
 #include "Config.h"
 #include "Workspace.h"
@@ -44,6 +44,10 @@ int main(int argc, char **argv) {
     // load config
     Config *config = new Config();
     config->loadConfig();
+
+    // get current running path
+    char cwd[PATH_MAX];
+    config->setCurrentPath(getcwd(cwd, PATH_MAX));
 
     if(forceColor)
         config->forceColor();

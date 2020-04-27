@@ -23,6 +23,8 @@ private:
     WINDOW *rightWindow;
     PANEL *rightPanel;
     PANEL *currentPanel;
+    string cmd;
+    string commandString;
 
     WINDOW *initWindow(int y, int x, int rows, int cols, int colour);
 };

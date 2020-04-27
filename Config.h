@@ -10,6 +10,10 @@
 
 using namespace std;
 
+enum PanelType {FileList, QuckView, QuckEdit, Info, Tree};
+enum ListMode {Full, Brief, Custom};
+enum SortOrder {Unsorted, Name, Ext, Size, MTime, ATime, CTime};
+
 class Config {
 
   public:
@@ -19,19 +23,48 @@ class Config {
     void loadConfig();
 
     void forceColor();
-
     void forceBlack();
-
-    void setSize(int row, int col);
     bool isColour();
 
+    void setSize(int row, int col);
     int getRows();
-
     int getCols();
 
+    void setCurrentPath(string sPath);
+    string getCurrentPath();
+
     char getUserPromp();
+    string getLeftPath();
+    string getRightPath();
 
     bool isShowDot();
+    void setShowDot(bool f);
+    bool isShowBorder();
+    void setShowBorder(bool f);
+    bool isShowStatus();
+    void setShowStatus(bool f);
+    bool isShowFree();
+    void setShowFree(bool f);
+    bool isShowTotal();
+    void setShowTotal(bool f);
+    bool isShowMenuBar();
+    void setShowMenuBar(bool f);
+    bool isShowKeyBar();
+    void setShowKeyBar(bool f);
+    bool isUseSi();
+    void setUseSi(bool f);
+
+//    confirmExit, confirmDelete, confirmOverride, confirmExecute;
+
+    bool isInternalEdit();
+    void setInternalEdit();
+    void setEditor(string filename);
+    string getEditor();
+
+    bool isInternalView();
+    void setInternalView();
+    void setViewer(string filename);
+    string getViewer();
 
 private:
     string defaultPath;
@@ -41,7 +74,8 @@ private:
     // config
     string leftPath, rightPath;
     bool internalEdit, internalView;
-    string internalEditName, internalViewName;
+    string editorCmd, viewerCmd;
+
     int hotPanels;
     bool showDot, showBorder, showStatus, showFree, showTotal, showMenuBar, showKeyBar, useSi;
     bool confirmExit, confirmDelete, confirmOverride, confirmExecute;
@@ -50,10 +84,5 @@ private:
     // colorMenuText, colorMenuBackground, colorMenuInput, colorMenuSelection, colorMenuHot
     // warningMenuText, warningMenuBackground, warningMenuSelection, warningMenuHot
 
-    // panel type
-    // FileList, QuickView, QuickEdit, Info, Tree
-    // ListMode: Full, Brief, Custom
     // Status string: name | size | permission
-
-    // Sort order: unsorted, name, ext, size, mtime, atime, ctime | executable first
 };

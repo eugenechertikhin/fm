@@ -3,6 +3,8 @@
 //
 
 #include "Workspace.h"
+#include <iostream>
+#include "Directory.h"
 
 using namespace std;
 
@@ -43,33 +45,30 @@ void Workspace::show() {
     set_panel_userptr(rightPanel, leftPanel);
 
     // print panel path
-//    mvprintw(0, 2, const_cast<char*>(title.c_str()));
-    mvwprintw(leftWindow, 0, 2, " left ");
-    mvwprintw(rightWindow, 0, 2, " right ");
+    mvwprintw(leftWindow, 0, 2, const_cast<char*>(config->getLeftPath().c_str()));
+    mvwprintw(rightWindow, 0, 2, const_cast<char*>(config->getRightPath().c_str()));
 
-    // print user prompt
-//    mvprintw(config->getRows(), 0, "~ %c ", config->getUserPromp());
-    mvprintw(config->getRows()-1, 0, "~ $ ");
-    doupdate();
+    // and path string
+    commandString = config->getCurrentPath() + ' ' + config->getUserPromp() + ' ' + cmd + ' ';
+    mvprintw(config->getRows()-1, 0, const_cast<char *>(commandString.c_str()));
 
     // read content of directories
+    Directory *dir = new Directory(config, config->getCurrentPath());
+    dir->getDirectory(false);
 
     // put dirs into panels
 
     // current panel
     currentPanel = leftPanel;
 
-    /* Update the stacking order. 2nd panel will be on top */
+    // update and show panels
     update_panels();
-
-    /* Show it on the screen */
     doupdate();
 
     // read keypressed
-    string userInput;
-
     while (!ex) {
-        int c = getch();
+//        int c = getch();
+        int c = mvgetch(config->getRows()-1,commandString.size() - 1);
         switch (c) {
             // functional
             case KEY_F(1):
@@ -130,17 +129,36 @@ void Workspace::show() {
             // find ^/
 
             // keys for command line
-            case KEY_BACKSPACE:
+            case 127: // backspace
+                cmd.pop_back();
                 break;
-            case KEY_ENTER:
+            case 10: // enter key
+                if (cmd.size() < 1)
+                    break;
+
+                endwin();
+                system(const_cast<char *>(cmd.c_str()));
+                cout << "Press any key to continue...";
+                cin.get();
+                refresh();
+
+                // todo: save command to history
+
+                // clear command line
+                move(config->getRows()-1, 0);
+                clrtoeol();
+                cmd = "";
                 break;
             default:
+                cmd.push_back(c);
                 break;
         }
+
+        // print user prompt
+        commandString = config->getCurrentPath() + ' ' + config->getUserPromp() + ' ' + cmd + ' ';
+        mvprintw(config->getRows()-1, 0, const_cast<char *>(commandString.c_str()));
+
         update_panels();
         doupdate();
     }
-
-    // program should terminate
-    return;
 }

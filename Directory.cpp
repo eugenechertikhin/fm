@@ -26,22 +26,26 @@ int Directory::getDirectory(bool force) {
     DIR *dir;
     struct dirent *dirent;
 
-    if (force)
+    if (force) {
         files.clear();
 
-    dir = opendir(const_cast<char*>(path.c_str()));
-    if (dir == NULL)
-        return -1;
+        dir = opendir(const_cast<char *>(path.c_str()));
+        if (dir == NULL)
+            return -1;
 
-    while ((dirent = readdir(dir)) != NULL) {
-        if (strcmp(dirent->d_name, ".") != 0 && strcmp(dirent->d_name, "..") != 0)
-            if (!((dirent->d_name[0] == '.') && !config->isShowDot())) {
-                files.push_back(string(dirent->d_name));
-                // todo also save file attribute, etc
-            }
+        while ((dirent = readdir(dir)) != NULL) {
+            if (strcmp(dirent->d_name, ".") != 0 && strcmp(dirent->d_name, "..") != 0)
+                if (!((dirent->d_name[0] == '.') && !config->isShowDot())) {
+                    files.push_back(string(dirent->d_name));
+
+                    // todo: also save file attribute, etc
+                }
+        }
+
+        closedir(dir);
     }
 
-    closedir (dir);
+    return files.size();
 }
 
 string Directory::getCurrentPath() {
