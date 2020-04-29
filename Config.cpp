@@ -4,15 +4,20 @@
 
 #include "Config.h"
 #include "version.h"
+#include "Simpleini/Simpleini.h"
 
 Config::Config() {
     color = true;
     showDot = true;
     hotPanels = 0;
+    leftPanelType = FileList;
+    leftPanelMode = Full;
+    rightPanelType = FileList;
+    rightPanelMode = Brief;
 }
 
 Config::~Config() {
-
+    // save config to ini
 }
 
 void Config::loadConfig() {
@@ -59,11 +64,37 @@ string Config::getLeftPath() {
     return leftPath;
 }
 
+PanelType Config::getLeftPanelType() {
+    return leftPanelType;
+}
+void Config::setLeftPanelType(PanelType type) {
+    leftPanelType = type;
+}
+ListMode Config::getLeftPanelMode() {
+    return leftPanelMode;
+}
+void Config::setLeftPanelMode(ListMode mode) {
+    leftPanelMode = mode;
+}
+
 string Config::getRightPath() {
     if (rightPath.empty())
         rightPath = defaultPath;
 
     return rightPath;
+}
+
+PanelType Config::getRightPanelType() {
+    return rightPanelType;
+}
+void Config::setRightPanelType(PanelType type) {
+    rightPanelType = type;
+}
+ListMode Config::getRightPanelMode() {
+    return rightPanelMode;
+}
+void Config::setRightPanelMode(ListMode mode) {
+    rightPanelMode = mode;
 }
 
 bool Config::isShowDot() {

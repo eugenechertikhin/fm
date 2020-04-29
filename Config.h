@@ -10,9 +10,10 @@
 
 using namespace std;
 
-enum PanelType {FileList, QuckView, QuckEdit, Info, Tree};
+enum PanelType {FileList, QuckView, Info, Tree};
 enum ListMode {Full, Brief, Custom};
 enum SortOrder {Unsorted, Name, Ext, Size, MTime, ATime, CTime};
+// Status string: name | size | permission
 
 class Config {
 
@@ -32,10 +33,19 @@ class Config {
 
     void setCurrentPath(string sPath);
     string getCurrentPath();
-
     char getUserPromp();
+
     string getLeftPath();
+    PanelType getLeftPanelType();
+    void setLeftPanelType(PanelType type);
+    ListMode getLeftPanelMode();
+    void setLeftPanelMode(ListMode mode);
+
     string getRightPath();
+    PanelType getRightPanelType();
+    void setRightPanelType(PanelType type);
+    ListMode getRightPanelMode();
+    void setRightPanelMode(ListMode mode);
 
     bool isShowDot();
     void setShowDot(bool f);
@@ -72,17 +82,18 @@ private:
     int rows, cols;
 
     // config
-    string leftPath, rightPath;
+    string leftPath;
+    PanelType leftPanelType;
+    ListMode leftPanelMode;
+
+    string rightPath;
+    PanelType rightPanelType;
+    ListMode rightPanelMode;
+
     bool internalEdit, internalView;
     string editorCmd, viewerCmd;
 
     int hotPanels;
     bool showDot, showBorder, showStatus, showFree, showTotal, showMenuBar, showKeyBar, useSi;
     bool confirmExit, confirmDelete, confirmOverride, confirmExecute;
-
-    // colorText, colorBackground, colorDirectory, colorSelection, colorFile, colorExeFile, colorArchive, colorLink, colorSocket, colorBroken
-    // colorMenuText, colorMenuBackground, colorMenuInput, colorMenuSelection, colorMenuHot
-    // warningMenuText, warningMenuBackground, warningMenuSelection, warningMenuHot
-
-    // Status string: name | size | permission
 };

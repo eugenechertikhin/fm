@@ -14,6 +14,8 @@ class Workspace {
 public:
     Workspace(Config *pConfig);
 
+    void fillInsideWindow(WINDOW *win, PanelType type, ListMode mode, string path);
+
     void show();
 
 private:

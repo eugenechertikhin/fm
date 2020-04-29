@@ -10,43 +10,81 @@ using namespace std;
 
 Workspace::Workspace(Config *pConfig) {
     this->config = pConfig;
+
+    // colours
+    init_pair(1, COLOR_WHITE, COLOR_BLUE); // main panel color
+    init_pair(2, COLOR_YELLOW, COLOR_BLUE); // highline text at main panel
+    init_pair(3, COLOR_BLACK, COLOR_CYAN);
+    // colorText, colorBackground, colorDirectory, colorSelection, colorFile, colorExeFile, colorArchive, colorLink, colorSocket, colorBroken
+    // colorMenuText, colorMenuBackground, colorMenuInput, colorMenuSelection, colorMenuHot
+    // warningMenuText, warningMenuBackground, warningMenuSelection, warningMenuHot
+
 }
 
 WINDOW * Workspace::initWindow(int y, int x, int rows, int cols, int colour) {
     WINDOW *win = newwin(rows, cols, y, x);
     box(win, 0, 0);
-
-    wattron(win, COLOR_PAIR(colour));
-    mvwaddch(win, rows -3, 0, ACS_LTEE);
-    mvwhline(win, rows -3, 1, ACS_HLINE, cols - 2);
-    mvwaddch(win, rows -3, cols - 1, ACS_RTEE);
-    wattroff(win, COLOR_PAIR(colour));
-    wbkgd(win, COLOR_PAIR(1));
-
-    refresh();
+    wbkgd(win, COLOR_PAIR(colour));
 
     return win;
 }
 
+void Workspace::fillInsideWindow(WINDOW *win, PanelType type, ListMode mode, string path) {
+    if ((type == FileList) || (type == Tree)) {
+
+        if (type == FileList) {
+
+            // print path at the header
+            wattron(win, COLOR_PAIR(3));
+            mvwprintw(win, 0, 2, " %s ", const_cast<char*>(path.c_str()));
+            wattroff(win, COLOR_PAIR(3));
+
+            wattron(win, COLOR_PAIR(1));
+            if (mode == Brief) {
+                for (int i = 0; i < config->getRows() - 1 - 3; i++) {
+                    mvwaddch(win, i + 1, config->getCols() / 4 - 1, ACS_VLINE);
+                }
+
+                // print column name
+                string n("Name");
+                wattron(win, COLOR_PAIR(2));
+                int sizeOfPart = config->getCols() / 2 /*left or right*/ / 2 /*2part*/;
+                for (int i = 1; i <= 2 /*part*/; i++) {
+                    mvwprintw(win, 1, (sizeOfPart*i) - (sizeOfPart / 2) /*center of part*/ - (n.size() / 2), const_cast<char *>(n.c_str()));
+                }
+                wattroff(win, COLOR_PAIR(2));
+
+            } else if (mode == Custom) {
+                // todo
+            } else if (mode == Full) {
+                // Name | Size | MTime
+            }
+
+        }
+        mvwaddch(win, config->getRows() - 1 - 3, 0, ACS_LTEE);
+        mvwhline(win, config->getRows() - 1 - 3, 1, ACS_HLINE, config->getCols() / 2 - 2);
+        mvwaddch(win, config->getRows() - 1 - 3, config->getCols() / 2 - 1, ACS_RTEE);
+
+        wattroff(win, COLOR_PAIR(1));
+    }
+}
+
+//enum PanelType {FileList, QuckView, Info, Tree};
+//enum ListMode {Full, Brief, Custom};
 void Workspace::show() {
     bool ex = false;
 
-    // colours
-    init_pair(1, COLOR_WHITE, COLOR_BLUE); // main panel color
-
     // show panels
     leftWindow = initWindow(0, 0, config->getRows()-1, config->getCols()/2, 1);
-    rightWindow = initWindow(0, config->getCols()/2, config->getRows()-1,config->getCols()/2, 1);
-
+    fillInsideWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode(), config->getLeftPath());
     leftPanel = new_panel(leftWindow);
+
+    rightWindow = initWindow(0, config->getCols()/2, config->getRows()-1,config->getCols()/2, 1);
+    fillInsideWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode(), config->getRightPath());
     rightPanel = new_panel(rightWindow);
 
     set_panel_userptr(leftPanel, rightPanel);
     set_panel_userptr(rightPanel, leftPanel);
-
-    // print panel path
-    mvwprintw(leftWindow, 0, 2, const_cast<char*>(config->getLeftPath().c_str()));
-    mvwprintw(rightWindow, 0, 2, const_cast<char*>(config->getRightPath().c_str()));
 
     // and path string
     commandString = config->getCurrentPath() + ' ' + config->getUserPromp() + ' ' + cmd + ' ';
@@ -57,6 +95,7 @@ void Workspace::show() {
     dir->getDirectory(false);
 
     // put dirs into panels
+    // todo
 
     // current panel
     currentPanel = leftPanel;
@@ -67,7 +106,6 @@ void Workspace::show() {
 
     // read keypressed
     while (!ex) {
-//        int c = getch();
         int c = mvgetch(config->getRows()-1,commandString.size() - 1);
         switch (c) {
             // functional
@@ -107,13 +145,12 @@ void Workspace::show() {
             case KEY_RIGHT:
                 break;
 
-            // action
             // redraw screen ^L
             // select file ^T
             // select files goup ^+
             // unselect file group ^-
             // swap panel ^U
-            // get inputChar || quick change dir ^C
+            // quick change dir ^C
             // change attr (own,mod) ??? ^X
             // find file ^S
             // compare files ^D
