@@ -63,7 +63,9 @@ string Config::getLeftPath() {
 
     return leftPath;
 }
-
+void Config::setLeftPath(string path) {
+    leftPath = path;
+}
 PanelType Config::getLeftPanelType() {
     return leftPanelType;
 }
@@ -80,10 +82,11 @@ void Config::setLeftPanelMode(ListMode mode) {
 string Config::getRightPath() {
     if (rightPath.empty())
         rightPath = defaultPath;
-
     return rightPath;
 }
-
+void Config::setRightPath(string path) {
+    rightPath = path;
+}
 PanelType Config::getRightPanelType() {
     return rightPanelType;
 }

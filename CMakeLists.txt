@@ -1,13 +1,20 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.16)
 project(fm)
 
-set(CMAKE_C_STANDARD 11)
-set(SOURCES main.cpp Directory.cpp Config.cpp Workspace.cpp Workspace.h Operations.cpp Operations.h)
-include_directories(/usr/local/include)
-link_directories(/usr/local/lib)
+set(CMAKE_CXX_STANDARD 11)
 
 add_subdirectory(Simpleini)
 
-add_executable(fm ${SOURCES})
+add_executable(fm
+        Config.cpp
+        Config.h
+        Directory.cpp
+        Directory.h
+        main.cpp
+        Operations.cpp
+        Operations.h
+        version.h
+        Workspace.cpp
+        Workspace.h)
 
 target_link_libraries(fm menu panel ncurses)

@@ -7,21 +7,32 @@
 #include <vector>
 #include "Config.h"
 
-using namespace std;
+enum FileType { unknown, fifo, chardev, directory, blockdev, regular, link, socket};
+
+class FileEntry {
+public:
+    string name;
+    int uid, gid;
+    string linkedName;
+    bool linkOk;
+    int size;
+    FileType type;
+    string atime;
+    string mtime;
+    string ctime;
+    string perm;
+};
 
 class Directory {
   public:
-    Directory(Config *pConfig, string sPath);
+    Directory(Config *pConfig);
     ~Directory();
 
-    int getNumberOfFiles(bool force);
-    int getDirectory(bool force);
-    string getCurrentPath();
+    std::vector<FileEntry *> getDirectory(std::string sPath) throw (string);
 
   private:
     Config *config;
-    string path;
-    vector<string> files;
-    bool notRead;
+    std::string path;
+    std::vector<FileEntry *> files;
 };
 

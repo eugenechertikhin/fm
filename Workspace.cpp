@@ -4,6 +4,7 @@
 
 #include "Workspace.h"
 #include <iostream>
+#include <dirent.h>
 #include "Directory.h"
 
 using namespace std;
@@ -21,7 +22,7 @@ Workspace::Workspace(Config *pConfig) {
 
 }
 
-WINDOW * Workspace::initWindow(int y, int x, int rows, int cols, int colour) {
+WINDOW * Workspace::createWindow(int y, int x, int rows, int cols, int colour) {
     WINDOW *win = newwin(rows, cols, y, x);
     box(win, 0, 0);
     wbkgd(win, COLOR_PAIR(colour));
@@ -29,15 +30,28 @@ WINDOW * Workspace::initWindow(int y, int x, int rows, int cols, int colour) {
     return win;
 }
 
-void Workspace::fillInsideWindow(WINDOW *win, PanelType type, ListMode mode, string path) {
+void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, string path, bool active) {
     if ((type == FileList) || (type == Tree)) {
 
         if (type == FileList) {
+            // headers
+            char n[] = "Name";
+            char s[] = "Size";
+            char m[] = "Modify";
+            char a[] = "Access";
+            char c[] = "Create";
+            char p[] = "Perm";
 
             // print path at the header
-            wattron(win, COLOR_PAIR(3));
+            if (active)
+                wattron(win, COLOR_PAIR(3));
+            else
+                wattron(win, COLOR_PAIR(1));
             mvwprintw(win, 0, 2, " %s ", const_cast<char*>(path.c_str()));
-            wattroff(win, COLOR_PAIR(3));
+            if (active)
+                wattroff(win, COLOR_PAIR(3));
+            else
+                wattroff(win, COLOR_PAIR(0));
 
             wattron(win, COLOR_PAIR(1));
             if (mode == Brief) {
@@ -46,20 +60,34 @@ void Workspace::fillInsideWindow(WINDOW *win, PanelType type, ListMode mode, str
                 }
 
                 // print column name
-                string n("Name");
                 wattron(win, COLOR_PAIR(2));
                 int sizeOfPart = config->getCols() / 2 /*left or right*/ / 2 /*2part*/;
                 for (int i = 1; i <= 2 /*part*/; i++) {
-                    mvwprintw(win, 1, (sizeOfPart*i) - (sizeOfPart / 2) /*center of part*/ - (n.size() / 2), const_cast<char *>(n.c_str()));
+                    mvwprintw(win, 1, (sizeOfPart*i) - (sizeOfPart / 2) /*center of part*/ - (strlen(n) / 2), n);
                 }
                 wattroff(win, COLOR_PAIR(2));
 
             } else if (mode == Custom) {
                 // todo
             } else if (mode == Full) {
-                // Name | Size | MTime
-            }
+                // Name | Size | perm
 
+                int sizeOfPart = config->getCols() / 2 - 10 - 10;
+                for (int i = 0; i < config->getRows() - 1 - 3; i++) {
+                    mvwaddch(win, i + 1, sizeOfPart - 1, ACS_VLINE);
+                }
+
+                for (int i = 0; i < config->getRows() - 1 - 3; i++) {
+                    mvwaddch(win, i + 1, sizeOfPart + 10 - 1, ACS_VLINE);
+                }
+
+                wattron(win, COLOR_PAIR(2));
+                mvwprintw(win, 1, sizeOfPart / 2 - (strlen(n)/2), n);
+                mvwprintw(win, 1, sizeOfPart, s);
+                mvwprintw(win, 1, sizeOfPart + 10, p);
+
+                wattroff(win, COLOR_PAIR(2));
+            }
         }
         mvwaddch(win, config->getRows() - 1 - 3, 0, ACS_LTEE);
         mvwhline(win, config->getRows() - 1 - 3, 1, ACS_HLINE, config->getCols() / 2 - 2);
@@ -69,18 +97,34 @@ void Workspace::fillInsideWindow(WINDOW *win, PanelType type, ListMode mode, str
     }
 }
 
+void Workspace::printFiles(WINDOW *win, string path) {
+    Directory *dir = new Directory(config);
+    vector<FileEntry *> files = dir->getDirectory(path);
+    mvwprintw(win, 0, config->getCols() / 2 - 7, " %d ", files.size());
+
+    for (int i = 0; i < files.size(); i++) {
+        // todo
+        mvwprintw(win, 2 + i, 2, " %s\t%d\t%s", files[i]->name.c_str(), files[i]->size, files[i]->perm.c_str());
+    }
+}
+
 //enum PanelType {FileList, QuckView, Info, Tree};
 //enum ListMode {Full, Brief, Custom};
 void Workspace::show() {
     bool ex = false;
 
+    // temp
+    config->setLeftPath("/");
+
     // show panels
-    leftWindow = initWindow(0, 0, config->getRows()-1, config->getCols()/2, 1);
-    fillInsideWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode(), config->getLeftPath());
+    leftWindow = createWindow(0, 0, config->getRows() - 1, config->getCols() / 2, 1);
+    fillWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode(), config->getLeftPath(), true);
+    printFiles(leftWindow, config->getLeftPath());
     leftPanel = new_panel(leftWindow);
 
-    rightWindow = initWindow(0, config->getCols()/2, config->getRows()-1,config->getCols()/2, 1);
-    fillInsideWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode(), config->getRightPath());
+    rightWindow = createWindow(0, config->getCols() / 2, config->getRows() - 1, config->getCols() / 2, 1);
+    fillWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode(), config->getRightPath(), false);
+    printFiles(rightWindow, config->getRightPath());
     rightPanel = new_panel(rightWindow);
 
     set_panel_userptr(leftPanel, rightPanel);
@@ -89,13 +133,6 @@ void Workspace::show() {
     // and path string
     commandString = config->getCurrentPath() + ' ' + config->getUserPromp() + ' ' + cmd + ' ';
     mvprintw(config->getRows()-1, 0, const_cast<char *>(commandString.c_str()));
-
-    // read content of directories
-    Directory *dir = new Directory(config, config->getCurrentPath());
-    dir->getDirectory(false);
-
-    // put dirs into panels
-    // todo
 
     // current panel
     currentPanel = leftPanel;

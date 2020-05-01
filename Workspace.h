@@ -14,7 +14,8 @@ class Workspace {
 public:
     Workspace(Config *pConfig);
 
-    void fillInsideWindow(WINDOW *win, PanelType type, ListMode mode, string path);
+    void fillWindow(WINDOW *win, PanelType type, ListMode mode, string path, bool active);
+    void printFiles(WINDOW *win, string path);
 
     void show();
 
@@ -28,5 +29,5 @@ private:
     string cmd;
     string commandString;
 
-    WINDOW *initWindow(int y, int x, int rows, int cols, int colour);
+    WINDOW *createWindow(int y, int x, int rows, int cols, int colour);
 };

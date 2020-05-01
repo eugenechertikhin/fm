@@ -36,12 +36,14 @@ class Config {
     char getUserPromp();
 
     string getLeftPath();
+    void setLeftPath(string path);
     PanelType getLeftPanelType();
     void setLeftPanelType(PanelType type);
     ListMode getLeftPanelMode();
     void setLeftPanelMode(ListMode mode);
 
     string getRightPath();
+    void setRightPath(string path);
     PanelType getRightPanelType();
     void setRightPanelType(PanelType type);
     ListMode getRightPanelMode();
