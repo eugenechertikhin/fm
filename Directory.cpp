@@ -11,18 +11,20 @@
 
 Directory::Directory(Config *pConfig) {
     config = pConfig;
+    files = new vector<FileEntry *>;
 }
 
 Directory::~Directory() {
-    files.clear();
+    files->clear();
+    delete files;
 }
 
-vector<FileEntry *> Directory::getDirectory(const string &path) throw(string) {
+vector<FileEntry *> *Directory::getDirectory(const string &path) throw(string) {
     if (this->path.compare(path) == 0)
         return files;
 
     this->path = path;
-    this->files.clear();
+    this->files->clear();
 
     DIR *dir = opendir(const_cast<char *>(path.c_str()));
     if (dir == NULL)
@@ -45,7 +47,7 @@ vector<FileEntry *> Directory::getDirectory(const string &path) throw(string) {
                 e->gid = sb.st_gid;
                 e->type = unknown;
                 if (S_ISREG(sb.st_mode)) e->type = regular;
-                if (S_ISDIR(sb.st_mode)) e->type = directory;
+                if (S_ISDIR(sb.st_mode)) { e->type = directory; perm[0] = 'd'; }
                 if (S_ISCHR(sb.st_mode)) e->type = chardev;
                 if (S_ISBLK(sb.st_mode)) e->type = blockdev;
                 if (S_ISFIFO(sb.st_mode)) e->type = fifo;
@@ -66,10 +68,7 @@ vector<FileEntry *> Directory::getDirectory(const string &path) throw(string) {
                 e->atime = ctime(&sb.st_atimespec.tv_nsec);
                 e->mtime = ctime(&sb.st_mtimespec.tv_nsec);
 
-                files.push_back(e);
-
-                // todo: also save file attribute, etc
-
+                files->push_back(e);
             }
         }
     }

@@ -7,13 +7,6 @@
 #include "Simpleini/Simpleini.h"
 
 Config::Config() {
-    color = true;
-    showDot = true;
-    hotPanels = 0;
-    leftPanelType = FileList;
-    leftPanelMode = Full;
-    rightPanelType = FileList;
-    rightPanelMode = Brief;
 }
 
 Config::~Config() {
@@ -21,8 +14,23 @@ Config::~Config() {
 }
 
 void Config::loadConfig() {
-    root = false;
+    // load config from inni
 
+    // temp
+    root = false;
+    color = true;
+    showDot = true;
+    hotPanels = 0;
+
+    leftPath = "/";
+    leftPanelType = FileList;
+    leftPanelMode = Full;
+    leftPanelSort = Size;
+
+    rightPanelType = FileList;
+    rightPanelMode = Brief; // Custom;
+    rightCustomMode = "name size modify access create perm";
+    rightPanelSort = Name;
 }
 
 void Config::forceColor() {
@@ -42,12 +50,16 @@ bool Config::isColour() {
     return color;
 }
 
+int Config::getCols() {
+    return cols;
+}
+
 int Config::getRows() {
     return rows;
 }
 
-int Config::getCols() {
-    return cols;
+int Config::getRowsInPanel() {
+    return rows - 2 /* top size */ - 1 /* cmd line */ - 3 /* file info line */;
 }
 
 char Config::getUserPromp() {
@@ -78,6 +90,12 @@ ListMode Config::getLeftPanelMode() {
 void Config::setLeftPanelMode(ListMode mode) {
     leftPanelMode = mode;
 }
+SortOrder Config::getLeftPanelSort() {
+    return leftPanelSort;
+}
+void Config::setLeftPanelSort(SortOrder sort) {
+    leftPanelSort = sort;
+}
 
 string Config::getRightPath() {
     if (rightPath.empty())
@@ -98,6 +116,12 @@ ListMode Config::getRightPanelMode() {
 }
 void Config::setRightPanelMode(ListMode mode) {
     rightPanelMode = mode;
+}
+SortOrder Config::getRightPanelSort() {
+    return rightPanelSort;
+}
+void Config::setRightPanelSort(SortOrder sort) {
+    rightPanelSort = sort;
 }
 
 bool Config::isShowDot() {

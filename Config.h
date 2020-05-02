@@ -10,10 +10,9 @@
 
 using namespace std;
 
-enum PanelType {FileList, QuckView, Info, Tree};
+enum PanelType {FileList, QuickView, Info, Tree};
 enum ListMode {Full, Brief, Custom};
 enum SortOrder {Unsorted, Name, Ext, Size, MTime, ATime, CTime};
-// Status string: name | size | permission
 
 class Config {
 
@@ -28,26 +27,33 @@ class Config {
     bool isColour();
 
     void setSize(int row, int col);
-    int getRows();
     int getCols();
+    int getRows();
+    int getRowsInPanel();
 
-    void setCurrentPath(const string &sPath);
     string getCurrentPath();
+    void setCurrentPath(const string &sPath);
     char getUserPromp();
 
+    // left panel
     string getLeftPath();
     void setLeftPath(const string &path);
     PanelType getLeftPanelType();
     void setLeftPanelType(PanelType type);
     ListMode getLeftPanelMode();
     void setLeftPanelMode(ListMode mode);
+    SortOrder getLeftPanelSort();
+    void setLeftPanelSort(SortOrder sort);
 
+    // right panel
     string getRightPath();
     void setRightPath(const string &path);
     PanelType getRightPanelType();
     void setRightPanelType(PanelType type);
     ListMode getRightPanelMode();
     void setRightPanelMode(ListMode mode);
+    SortOrder getRightPanelSort();
+    void setRightPanelSort(SortOrder sort);
 
     bool isShowDot();
     void setShowDot(bool f);
@@ -85,12 +91,16 @@ private:
 
     // config
     string leftPath;
+    string leftCustomMode;
     PanelType leftPanelType;
     ListMode leftPanelMode;
+    SortOrder leftPanelSort;
 
     string rightPath;
+    string rightCustomMode;
     PanelType rightPanelType;
     ListMode rightPanelMode;
+    SortOrder rightPanelSort;
 
     bool internalEdit, internalView;
     string editorCmd, viewerCmd;

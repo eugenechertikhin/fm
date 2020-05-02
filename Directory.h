@@ -9,8 +9,7 @@
 
 enum FileType { unknown, fifo, chardev, directory, blockdev, regular, link, socket};
 
-class FileEntry {
-public:
+struct FileEntry {
     string name;
     int uid, gid;
     string linkedName;
@@ -28,11 +27,11 @@ class Directory {
     Directory(Config *pConfig);
     ~Directory();
 
-    vector<FileEntry *> getDirectory(const string &path) throw (string);
+    vector<FileEntry *> *getDirectory(const string &path) throw (string);
 
   private:
     Config *config;
     std::string path;
-    std::vector<FileEntry *> files;
+    std::vector<FileEntry *> *files;
 };
 
