@@ -8,14 +8,12 @@
 #include <panel.h>
 #include "Config.h"
 
-using namespace std;
-
 class Workspace {
 public:
     Workspace(Config *pConfig);
 
-    void fillWindow(WINDOW *win, PanelType type, ListMode mode, string path, bool active);
-    void printFiles(WINDOW *win, string path);
+    void fillWindow(WINDOW *win, PanelType type, ListMode mode, const string &path, bool active);
+    void printFiles(WINDOW *win, const string &path);
 
     void show();
 

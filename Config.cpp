@@ -63,7 +63,7 @@ string Config::getLeftPath() {
 
     return leftPath;
 }
-void Config::setLeftPath(string path) {
+void Config::setLeftPath(const string &path) {
     leftPath = path;
 }
 PanelType Config::getLeftPanelType() {
@@ -84,7 +84,7 @@ string Config::getRightPath() {
         rightPath = defaultPath;
     return rightPath;
 }
-void Config::setRightPath(string path) {
+void Config::setRightPath(const string &path) {
     rightPath = path;
 }
 PanelType Config::getRightPanelType() {
@@ -156,7 +156,7 @@ void Config::setUseSi(bool f) {
     useSi = f;
 }
 
-void Config::setCurrentPath(string sPath) {
+void Config::setCurrentPath(const string &sPath) {
     this->defaultPath = sPath;
 }
 
@@ -171,7 +171,7 @@ void Config::setInternalEdit() {
     this->internalEdit = true;
 }
 
-void Config::setEditor(string filename) {
+void Config::setEditor(const string &filename) {
     this->internalEdit = false;
     this->editorCmd = filename;
 }
@@ -188,7 +188,7 @@ void Config::setInternalView() {
     this->internalView = true;
 }
 
-void Config::setViewer(string filename) {
+void Config::setViewer(const string &filename) {
     this->internalView = false;
     this->viewerCmd = filename;
 }

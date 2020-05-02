@@ -17,4 +17,4 @@ add_executable(fm
         Workspace.cpp
         Workspace.h)
 
-target_link_libraries(fm menu panel ncurses)
+target_link_libraries(fm panel ncurses)

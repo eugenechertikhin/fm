@@ -28,7 +28,7 @@ class Directory {
     Directory(Config *pConfig);
     ~Directory();
 
-    std::vector<FileEntry *> getDirectory(std::string sPath) throw (string);
+    vector<FileEntry *> getDirectory(const string &path) throw (string);
 
   private:
     Config *config;

@@ -31,19 +31,19 @@ class Config {
     int getRows();
     int getCols();
 
-    void setCurrentPath(string sPath);
+    void setCurrentPath(const string &sPath);
     string getCurrentPath();
     char getUserPromp();
 
     string getLeftPath();
-    void setLeftPath(string path);
+    void setLeftPath(const string &path);
     PanelType getLeftPanelType();
     void setLeftPanelType(PanelType type);
     ListMode getLeftPanelMode();
     void setLeftPanelMode(ListMode mode);
 
     string getRightPath();
-    void setRightPath(string path);
+    void setRightPath(const string &path);
     PanelType getRightPanelType();
     void setRightPanelType(PanelType type);
     ListMode getRightPanelMode();
@@ -70,12 +70,12 @@ class Config {
 
     bool isInternalEdit();
     void setInternalEdit();
-    void setEditor(string filename);
+    void setEditor(const string &filename);
     string getEditor();
 
     bool isInternalView();
     void setInternalView();
-    void setViewer(string filename);
+    void setViewer(const string &filename);
     string getViewer();
 
 private:

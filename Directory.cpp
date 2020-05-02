@@ -17,7 +17,7 @@ Directory::~Directory() {
     files.clear();
 }
 
-vector<FileEntry *> Directory::getDirectory(string path) throw(string) {
+vector<FileEntry *> Directory::getDirectory(const string &path) throw(string) {
     if (this->path.compare(path) == 0)
         return files;
 

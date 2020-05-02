@@ -30,7 +30,7 @@ WINDOW * Workspace::createWindow(int y, int x, int rows, int cols, int colour) {
     return win;
 }
 
-void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, string path, bool active) {
+void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, const string &path, bool active) {
     if ((type == FileList) || (type == Tree)) {
 
         if (type == FileList) {
@@ -97,7 +97,7 @@ void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, string pa
     }
 }
 
-void Workspace::printFiles(WINDOW *win, string path) {
+void Workspace::printFiles(WINDOW *win, const string &path) {
     Directory *dir = new Directory(config);
     vector<FileEntry *> files = dir->getDirectory(path);
     mvwprintw(win, 0, config->getCols() / 2 - 7, " %d ", files.size());
