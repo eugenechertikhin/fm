@@ -45,6 +45,12 @@ int main(int argc, char **argv) {
     Config *config = new Config();
     config->loadConfig();
 
+    uid_t uid = getuid();
+    if (uid == 0)
+        config->setRoot(true);
+    else
+        config->setRoot(false);
+
     // get current running path
     char cwd[PATH_MAX];
     config->setCurrentPath(getcwd(cwd, PATH_MAX));

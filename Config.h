@@ -33,6 +33,7 @@ class Config {
 
     string getCurrentPath();
     void setCurrentPath(const string &sPath);
+    void setRoot(bool isRoot);
     char getUserPromp();
 
     // left panel

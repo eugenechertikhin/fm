@@ -12,6 +12,7 @@
 Directory::Directory(Config *pConfig) {
     config = pConfig;
     files = new vector<FileEntry *>;
+    force = true;
 }
 
 Directory::~Directory() {
@@ -19,12 +20,16 @@ Directory::~Directory() {
     delete files;
 }
 
-vector<FileEntry *> *Directory::getDirectory(const string &path) throw(string) {
-    if (this->path.compare(path) == 0)
+void Directory::setPath(string path) {
+    this->path = path;
+    force = true;
+}
+
+vector<FileEntry *> *Directory::getDirectory() throw(string) {
+    if (!force)
         return files;
 
-    this->path = path;
-    this->files->clear();
+    files->clear();
 
     DIR *dir = opendir(const_cast<char *>(path.c_str()));
     if (dir == NULL)
@@ -32,7 +37,7 @@ vector<FileEntry *> *Directory::getDirectory(const string &path) throw(string) {
 
     struct dirent *dirent;
     while ((dirent = readdir(dir)) != NULL) {
-        if (strcmp(dirent->d_name, ".") != 0 && strcmp(dirent->d_name, "..") != 0) {
+        if (strcmp(dirent->d_name, ".") != 0 /*&& strcmp(dirent->d_name, "..") != 0*/) {
             if (!((dirent->d_name[0] == '.') && !config->isShowDot())) {
                 struct stat sb;
                 bzero(&sb, sizeof(sb));
@@ -51,7 +56,7 @@ vector<FileEntry *> *Directory::getDirectory(const string &path) throw(string) {
                 if (S_ISCHR(sb.st_mode)) e->type = chardev;
                 if (S_ISBLK(sb.st_mode)) e->type = blockdev;
                 if (S_ISFIFO(sb.st_mode)) e->type = fifo;
-                if (S_ISLNK(sb.st_mode)) e->type = link;
+                if (S_ISLNK(sb.st_mode)) e->type = softlink;
                 if (S_ISSOCK(sb.st_mode)) e->type = socket;
                 perm[0] = (sb.st_mode & S_ISVTX) ? 'S' : '-';
                 perm[1] = (sb.st_mode & S_IRUSR) ? 'r' : '-';
@@ -74,6 +79,7 @@ vector<FileEntry *> *Directory::getDirectory(const string &path) throw(string) {
     }
 
     closedir(dir);
+    force = false;
 
     return files;
 }

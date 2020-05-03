@@ -12,9 +12,8 @@
 using namespace std;
 
 Workspace::Workspace(Config *pConfig) {
-    this->config = pConfig;
+    config = pConfig;
 
-    selection = 0;
     leftFilesOffset = 0;
     rightFilesOffset = 0;
 
@@ -29,6 +28,9 @@ Workspace::Workspace(Config *pConfig) {
 
 }
 
+Workspace::~Workspace() {
+}
+
 WINDOW *Workspace::createWindow(int y, int x, int rows, int cols, int colour) {
     WINDOW *win = newwin(rows, cols, y, x);
     box(win, 0, 0);
@@ -37,7 +39,7 @@ WINDOW *Workspace::createWindow(int y, int x, int rows, int cols, int colour) {
     return win;
 }
 
-void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, const string &path, bool active) {
+void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode) {
     if (type == FileList) {
 
         if (type == FileList) {
@@ -48,17 +50,6 @@ void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, const str
             char a[] = "Access";
             char c[] = "Create";
             char p[] = "Perm";
-
-            // print path at the header
-            if (active)
-                wattron(win, COLOR_PAIR(3));
-            else
-                wattron(win, COLOR_PAIR(1));
-            mvwprintw(win, 0, 2, " %s ", const_cast<char*>(path.c_str()));
-            if (active)
-                wattroff(win, COLOR_PAIR(3));
-            else
-                wattroff(win, COLOR_PAIR(0));
 
             wattron(win, COLOR_PAIR(1));
             if (mode == Brief) {
@@ -104,9 +95,8 @@ void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, const str
     }
 }
 
-void Workspace::printFiles(WINDOW *win, const string &path, SortOrder sortOrder, ListMode listMode) {
-    Directory *dir = new Directory(config);
-    vector<FileEntry *> *files = dir->getDirectory(path);
+void Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode) {
+    vector<FileEntry *> *files = dir->getDirectory();
 
     // files count in the directory
     mvwprintw(win, 0, config->getCols() / 2 - 7, " %d ", files->size());
@@ -136,40 +126,63 @@ void Workspace::printFiles(WINDOW *win, const string &path, SortOrder sortOrder,
     for(auto const &entry: *files) {
         if (listMode == Full) {
             int sizeOfPart = config->getCols() / 2 - SmallColumnSize-1 - SmallColumnSize-1;
-
             mvwprintw(win, 2 + i, 1, " %s", entry->name.c_str());
             mvwprintw(win, 2 + i, sizeOfPart, " %d", entry->size);
             mvwprintw(win, 2 + i, sizeOfPart + SmallColumnSize, " %s", entry->perm.c_str());
         } else if (listMode == Brief) {
-            mvwprintw(win, 2 + i, 2, " %s", entry->name.c_str());
+            mvwprintw(win, 2 + i, 1, " %s", entry->name.c_str());
         } else if (listMode == Custom) {
             // todo
         }
         i++;
+        if (i == config->getRowsInPanel())
+            break;
     }
-
-    delete dir;
 }
 
 void Workspace::show() {
     bool ex = false;
 
     // show panels
-    leftWindow = createWindow(0, 0, config->getRows() - 1, config->getCols() / 2, 1);
-    fillWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode(), config->getLeftPath(), true);
-    printFiles(leftWindow, config->getLeftPath(), config->getLeftPanelSort(), config->getLeftPanelMode());
-    leftPanel = new_panel(leftWindow);
+    PANEL_DATA leftPanelData;
+    leftPanelData.position = 0;
+    leftPanelData.path = config->getLeftPath();
+    leftPanelData.dir = new Directory(config);
+    leftPanelData.dir->setPath(config->getLeftPath());
+    WINDOW *leftWindow = createWindow(0, 0, config->getRows() - 1, config->getCols() / 2, 1);
+    fillWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode());
+    printFiles(leftWindow, leftPanelData.dir, config->getLeftPanelSort(), config->getLeftPanelMode());
+    PANEL *leftPanel = new_panel(leftWindow);
 
-    rightWindow = createWindow(0, config->getCols() / 2, config->getRows() - 1, config->getCols() / 2, 1);
-    fillWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode(), config->getRightPath(), false);
-    printFiles(rightWindow, config->getRightPath(), config->getRightPanelSort(), config->getRightPanelMode());
-    rightPanel = new_panel(rightWindow);
+    PANEL_DATA rightPanelData;
+    rightPanelData.position = 0;
+    rightPanelData.path = config->getRightPath();
+    rightPanelData.dir = new Directory(config);
+    rightPanelData.dir->setPath(config->getRightPath());
+    WINDOW *rightWindow = createWindow(0, config->getCols() / 2, config->getRows() - 1, config->getCols() / 2, 1);
+    fillWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode());
+    printFiles(rightWindow, rightPanelData.dir, config->getRightPanelSort(), config->getRightPanelMode());
+    PANEL *rightPanel = new_panel(rightWindow);
 
-    set_panel_userptr(leftPanel, rightPanel);
-    set_panel_userptr(rightPanel, leftPanel);
+    leftPanelData.next = rightPanel;
+    rightPanelData.next = leftPanel;
+
+    set_panel_userptr(leftPanel, &leftPanelData);
+    set_panel_userptr(rightPanel, &rightPanelData);
 
     // current panel
     currentPanel = leftPanel;
+
+    // print path at the header
+    wattron(leftWindow, COLOR_PAIR(3));
+    mvwprintw(leftWindow, 0, 2, " %s ", const_cast<char*>(leftPanelData.path.c_str()));
+    wattroff(leftWindow, COLOR_PAIR(3));
+
+    wattron(rightWindow, COLOR_PAIR(1));
+    mvwprintw(rightWindow, 0, 2, " %s ", const_cast<char*>(rightPanelData.path.c_str()));
+    wattroff(rightWindow, COLOR_PAIR(0));
+
+    mvwchgat(currentPanel->win, 2 + leftPanelData.position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
 
     // and path string
     commandString = config->getCurrentPath() + ' ' + config->getUserPromp() + ' ' + cmd + ' ';
@@ -182,6 +195,7 @@ void Workspace::show() {
     // read keypressed
     while (!ex) {
         int c = mvgetch(config->getRows()-1,commandString.size() - 1);
+        PANEL_DATA *d = (PANEL_DATA *)panel_userptr(currentPanel);
         switch (c) {
             // functional
             case KEY_F(1):
@@ -203,22 +217,46 @@ void Workspace::show() {
             case KEY_F(9):
                 break;
             case KEY_F(10):
+                delete d->dir;
+                d = (PANEL_DATA *)panel_userptr(d->next);
+                delete d->dir;
+
                 ex = true;
                 break;
 
             // moving keys
             case 9: // TAB
-                currentPanel = (PANEL *)panel_userptr(currentPanel);
+                mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 1, NULL);
+
+                wattron(currentPanel->win, COLOR_PAIR(1));
+                mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(d->path.c_str()));
+                wattroff(currentPanel->win, COLOR_PAIR(0));
+
+                currentPanel = d->next;
+
+                mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
+
+                // print path at the header
+                d = (PANEL_DATA *)panel_userptr(currentPanel);
+                wattron(currentPanel->win, COLOR_PAIR(3));
+                mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(d->path.c_str()));
+                wattroff(currentPanel->win, COLOR_PAIR(3));
+
                 top_panel(currentPanel);
                 break;
             case KEY_UP:
-                selection = (selection == 0) ? 0 : selection--;
+                if (d->position != 0) {
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 1, NULL);
+                    d->position--;
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
+                }
                 break;
             case KEY_DOWN:
-                if (selection == config->getRowsInPanel()) {
-
+                if (d->position < config->getRowsInPanel()-1) {
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 1, NULL);
+                    d->position++;
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
                 }
-                selection = (selection == config->getRowsInPanel()) ? config->getRowsInPanel() : selection++;
                 break;
             case KEY_LEFT:
                 break;
@@ -254,9 +292,10 @@ void Workspace::show() {
                     break;
 
                 endwin();
+                // append "cd `d->path`;" to begin of cmd
                 system(const_cast<char *>(cmd.c_str()));
                 cout << "Press any key to continue...";
-                cin.get();
+                getch();
                 refresh();
 
                 // todo: save command to history

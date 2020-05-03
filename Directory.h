@@ -7,7 +7,7 @@
 #include <vector>
 #include "Config.h"
 
-enum FileType { unknown, fifo, chardev, directory, blockdev, regular, link, socket};
+enum FileType { unknown, fifo, chardev, directory, blockdev, regular, softlink, socket};
 
 struct FileEntry {
     string name;
@@ -27,11 +27,13 @@ class Directory {
     Directory(Config *pConfig);
     ~Directory();
 
-    vector<FileEntry *> *getDirectory(const string &path) throw (string);
+    void setPath(string path);
+    vector<FileEntry *> *getDirectory() throw (string);
 
   private:
     Config *config;
     std::string path;
+    bool force;
     std::vector<FileEntry *> *files;
 };
 

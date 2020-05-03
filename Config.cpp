@@ -22,10 +22,9 @@ void Config::loadConfig() {
     showDot = true;
     hotPanels = 0;
 
-    leftPath = "/";
     leftPanelType = FileList;
     leftPanelMode = Full;
-    leftPanelSort = Size;
+    leftPanelSort = Name;
 
     rightPanelType = FileList;
     rightPanelMode = Brief; // Custom;
@@ -60,6 +59,10 @@ int Config::getRows() {
 
 int Config::getRowsInPanel() {
     return rows - 2 /* top size */ - 1 /* cmd line */ - 3 /* file info line */;
+}
+
+void Config::setRoot(bool isRoot) {
+    root = isRoot;
 }
 
 char Config::getUserPromp() {

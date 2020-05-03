@@ -9,33 +9,33 @@
 #include "Config.h"
 #include "Directory.h"
 
+typedef struct _PANEL_DATA {
+    // left ? right
+    string path;
+    Directory *dir;
+    int position;
+    PANEL *next;
+}PANEL_DATA;
+
 class Workspace {
 public:
     Workspace(Config *pConfig);
+    ~Workspace();
 
     void show();
 
 private:
     Config *config;
 
-    WINDOW *leftWindow;
-    PANEL *leftPanel;
     int leftFilesOffset;
-    Directory *leftDir;
-
-    WINDOW *rightWindow;
-    PANEL *rightPanel;
     int rightFilesOffset;
-    Directory *rightDir;
 
     PANEL *currentPanel;
     string cmd;
     string commandString;
 
-    int selection;
-
     WINDOW *createWindow(int y, int x, int rows, int cols, int colour);
-    void fillWindow(WINDOW *win, PanelType type, ListMode mode, const string &path, bool active);
-    void printFiles(WINDOW *win, const string &path, SortOrder sortOrder, ListMode listMode);
+    void fillWindow(WINDOW *win, PanelType type, ListMode mode);
+    void printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode);
 
 };
