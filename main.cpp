@@ -6,8 +6,6 @@
 #include "Config.h"
 #include "Workspace.h"
 
-using namespace std;
-
 int main(int argc, char **argv) {
     bool forceBlack = false;
     bool forceColor = false;
@@ -26,14 +24,14 @@ int main(int argc, char **argv) {
                 break;
             case 'v':
                 // print version and credits
-                cout << FM_NAME <<endl << "Version: " << FM_VERSION << endl;
+                std::cout << FM_NAME << std::endl << "Version: " << FM_VERSION << std::endl;
                 exit(0);
             default:
-                cout << "Usage: " << argv[0] << " -h -b -c -v" << endl
-                     << " -b notRead black interface" << endl
-                     << " -c notRead colour interface" << endl
-                     << " -v version" << endl
-                     << " -h this help" << endl;
+                std::cout << "Usage: " << argv[0] << " -h -b -c -v" << std::endl
+                     << " -b notRead black interface" << std::endl
+                     << " -c notRead colour interface" << std::endl
+                     << " -v version" << std::endl
+                     << " -h this help" << std::endl;
                 exit(-1);
         }
     };

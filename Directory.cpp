@@ -11,7 +11,7 @@
 
 Directory::Directory(Config *pConfig) {
     config = pConfig;
-    files = new vector<FileEntry *>;
+    files = new std::vector<FileEntry *>;
     force = true;
 }
 
@@ -20,12 +20,12 @@ Directory::~Directory() {
     delete files;
 }
 
-void Directory::setPath(string path) {
+void Directory::setPath(std::string path) {
     this->path = path;
     force = true;
 }
 
-vector<FileEntry *> *Directory::getDirectory() throw(string) {
+std::vector<FileEntry *> *Directory::getDirectory() throw(std::string) {
     if (!force)
         return files;
 
@@ -51,13 +51,7 @@ vector<FileEntry *> *Directory::getDirectory() throw(string) {
                 e->uid = sb.st_uid;
                 e->gid = sb.st_gid;
                 e->type = unknown;
-                if (S_ISREG(sb.st_mode)) e->type = regular;
-                if (S_ISDIR(sb.st_mode)) { e->type = directory; perm[0] = 'd'; }
-                if (S_ISCHR(sb.st_mode)) e->type = chardev;
-                if (S_ISBLK(sb.st_mode)) e->type = blockdev;
-                if (S_ISFIFO(sb.st_mode)) e->type = fifo;
-                if (S_ISLNK(sb.st_mode)) e->type = softlink;
-                if (S_ISSOCK(sb.st_mode)) e->type = socket;
+
                 perm[0] = (sb.st_mode & S_ISVTX) ? 'S' : '-';
                 perm[1] = (sb.st_mode & S_IRUSR) ? 'r' : '-';
                 perm[2] = (sb.st_mode & S_IWUSR) ? 'w' : '-';
@@ -68,7 +62,17 @@ vector<FileEntry *> *Directory::getDirectory() throw(string) {
                 perm[7] = (sb.st_mode & S_IROTH) ? 'r' : '-';
                 perm[8] = (sb.st_mode & S_IWOTH) ? 'w' : '-';
                 perm[9] = (sb.st_mode & S_IXOTH) ? 'x' : '-';
+
+                if (S_ISREG(sb.st_mode)) e->type = regular;
+                if (S_ISDIR(sb.st_mode)) { e->type = directory; perm[0] = 'd'; }
+                if (S_ISCHR(sb.st_mode)) e->type = chardev;
+                if (S_ISBLK(sb.st_mode)) e->type = blockdev;
+                if (S_ISFIFO(sb.st_mode)) e->type = fifo;
+                if (S_ISLNK(sb.st_mode)) e->type = softlink;
+                if (S_ISSOCK(sb.st_mode)) e->type = socket;
+
                 e->perm = perm;
+
                 e->ctime = ctime(&sb.st_ctimespec.tv_nsec);
                 e->atime = ctime(&sb.st_atimespec.tv_nsec);
                 e->mtime = ctime(&sb.st_mtimespec.tv_nsec);

@@ -15,6 +15,6 @@ add_executable(fm
         Operations.h
         version.h
         Workspace.cpp
-        Workspace.h)
+        Workspace.h Utils.h)
 
 target_link_libraries(fm panel ncurses)

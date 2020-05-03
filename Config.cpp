@@ -72,14 +72,19 @@ char Config::getUserPromp() {
     return '$';
 }
 
-string Config::getLeftPath() {
+std::string Config::getLeftPath() {
     if (leftPath.empty())
         leftPath = defaultPath;
-
     return leftPath;
 }
-void Config::setLeftPath(const string &path) {
+void Config::setLeftPath(const std::string &path) {
     leftPath = path;
+}
+std::string Config::getLeftCustomMode() {
+    return leftCustomMode;
+}
+void Config::setLeftCustomMode(std::string custom) {
+    leftCustomMode = custom;
 }
 PanelType Config::getLeftPanelType() {
     return leftPanelType;
@@ -100,13 +105,19 @@ void Config::setLeftPanelSort(SortOrder sort) {
     leftPanelSort = sort;
 }
 
-string Config::getRightPath() {
+std::string Config::getRightPath() {
     if (rightPath.empty())
         rightPath = defaultPath;
     return rightPath;
 }
-void Config::setRightPath(const string &path) {
+void Config::setRightPath(const std::string &path) {
     rightPath = path;
+}
+std::string Config::getRightCustomMode() {
+    return rightCustomMode;
+}
+void Config::setRightCustomMode(std::string custom) {
+    rightCustomMode = custom;
 }
 PanelType Config::getRightPanelType() {
     return rightPanelType;
@@ -183,11 +194,11 @@ void Config::setUseSi(bool f) {
     useSi = f;
 }
 
-void Config::setCurrentPath(const string &sPath) {
+void Config::setCurrentPath(const std::string &sPath) {
     this->defaultPath = sPath;
 }
 
-string Config::getCurrentPath() {
+std::string Config::getCurrentPath() {
     return defaultPath;
 }
 
@@ -198,12 +209,12 @@ void Config::setInternalEdit() {
     this->internalEdit = true;
 }
 
-void Config::setEditor(const string &filename) {
+void Config::setEditor(const std::string &filename) {
     this->internalEdit = false;
     this->editorCmd = filename;
 }
 
-string Config::getEditor() {
+std::string Config::getEditor() {
     return editorCmd;
 }
 
@@ -215,11 +226,11 @@ void Config::setInternalView() {
     this->internalView = true;
 }
 
-void Config::setViewer(const string &filename) {
+void Config::setViewer(const std::string &filename) {
     this->internalView = false;
     this->viewerCmd = filename;
 }
 
-string Config::getViewer() {
+std::string Config::getViewer() {
     return viewerCmd;
 }

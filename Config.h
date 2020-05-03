@@ -8,10 +8,8 @@
 #define CONFIG_DIR "~/.fc"
 #define CONFIG_NAME "config"
 
-using namespace std;
-
 enum PanelType {FileList, QuickView, Info, Tree};
-enum ListMode {Full, Brief, Custom};
+enum ListMode  {Full, Brief, Custom};
 enum SortOrder {Unsorted, Name, Ext, Size, MTime, ATime, CTime};
 
 class Config {
@@ -31,14 +29,16 @@ class Config {
     int getRows();
     int getRowsInPanel();
 
-    string getCurrentPath();
-    void setCurrentPath(const string &sPath);
+    std::string getCurrentPath();
+    void setCurrentPath(const std::string &sPath);
     void setRoot(bool isRoot);
     char getUserPromp();
 
     // left panel
-    string getLeftPath();
-    void setLeftPath(const string &path);
+    std::string getLeftPath();
+    void setLeftPath(const std::string &path);
+    std::string getLeftCustomMode();
+    void setLeftCustomMode(std::string custom);
     PanelType getLeftPanelType();
     void setLeftPanelType(PanelType type);
     ListMode getLeftPanelMode();
@@ -47,8 +47,10 @@ class Config {
     void setLeftPanelSort(SortOrder sort);
 
     // right panel
-    string getRightPath();
-    void setRightPath(const string &path);
+    std::string getRightPath();
+    void setRightPath(const std::string &path);
+    std::string getRightCustomMode();
+    void setRightCustomMode(std::string custom);
     PanelType getRightPanelType();
     void setRightPanelType(PanelType type);
     ListMode getRightPanelMode();
@@ -77,34 +79,34 @@ class Config {
 
     bool isInternalEdit();
     void setInternalEdit();
-    void setEditor(const string &filename);
-    string getEditor();
+    void setEditor(const std::string &filename);
+    std::string getEditor();
 
     bool isInternalView();
     void setInternalView();
-    void setViewer(const string &filename);
-    string getViewer();
+    void setViewer(const std::string &filename);
+    std::string getViewer();
 
 private:
-    string defaultPath;
+    std::string defaultPath;
     bool color, root;
     int rows, cols;
 
     // config
-    string leftPath;
-    string leftCustomMode;
+    std::string leftPath;
+    std::string leftCustomMode;
     PanelType leftPanelType;
     ListMode leftPanelMode;
     SortOrder leftPanelSort;
 
-    string rightPath;
-    string rightCustomMode;
+    std::string rightPath;
+    std::string rightCustomMode;
     PanelType rightPanelType;
     ListMode rightPanelMode;
     SortOrder rightPanelSort;
 
     bool internalEdit, internalView;
-    string editorCmd, viewerCmd;
+    std::string editorCmd, viewerCmd;
 
     int hotPanels;
     bool showDot, showBorder, showStatus, showFree, showTotal, showMenuBar, showKeyBar, useSi;

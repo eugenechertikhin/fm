@@ -6,10 +6,9 @@
 #include <vector>
 #include <algorithm>
 #include "Workspace.h"
+#include "Utils.h"
 
-#define SmallColumnSize 10
-
-using namespace std;
+#define SmallColumnSize 11
 
 Workspace::Workspace(Config *pConfig) {
     config = pConfig;
@@ -39,7 +38,7 @@ WINDOW *Workspace::createWindow(int y, int x, int rows, int cols, int colour) {
     return win;
 }
 
-void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode) {
+void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, std::vector<std::string> *custom) {
     if (type == FileList) {
 
         if (type == FileList) {
@@ -64,19 +63,39 @@ void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode) {
                 wattroff(win, COLOR_PAIR(2));
 
             } else if (mode == Custom) {
-                // todo
-            } else if (mode == Full) {
-                int sizeOfPart = config->getCols() / 2 - SmallColumnSize-1 - SmallColumnSize-1;
+                int sizeOfPart = config->getCols() / 2 - (custom->size() * (SmallColumnSize+1)) -1;
                 for (int i = 0; i < config->getRows() - 1 - 3; i++)
                     mvwaddch(win, i + 1, sizeOfPart - 1, ACS_VLINE);
 
+                for(int j = 1; j < custom->size(); j++) {
+                    for (int i = 0; i < config->getRows() - 1 - 3; i++)
+                        mvwaddch(win, i + 1, sizeOfPart + (SmallColumnSize+1*j), ACS_VLINE);
+                }
+
+                wattron(win, COLOR_PAIR(2));
+                int i = 0;
+                for(auto const str: *custom) {
+                    if (i == 0) {
+                        mvwprintw(win, 1, sizeOfPart / 2 - (strlen(n) / 2), str.c_str());
+                        i++;
+                    } else {
+                        mvwprintw(win, 1, sizeOfPart + 1 + (SmallColumnSize+1*i) + ((SmallColumnSize - str.size())/2), str.c_str());
+                    }
+                }
+                wattroff(win, COLOR_PAIR(2));
+
+            } else if (mode == Full) {
+                int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
                 for (int i = 0; i < config->getRows() - 1 - 3; i++)
-                    mvwaddch(win, i + 1, sizeOfPart + SmallColumnSize - 1, ACS_VLINE);
+                    mvwaddch(win, i + 1, sizeOfPart, ACS_VLINE);
+
+                for (int i = 0; i < config->getRows() - 1 - 3; i++)
+                    mvwaddch(win, i + 1, sizeOfPart + (SmallColumnSize + 1), ACS_VLINE);
 
                 wattron(win, COLOR_PAIR(2));
                 mvwprintw(win, 1, sizeOfPart / 2 - (strlen(n)/2), n);
-                mvwprintw(win, 1, sizeOfPart, s);
-                mvwprintw(win, 1, sizeOfPart + SmallColumnSize, p);
+                mvwprintw(win, 1, sizeOfPart + 1 + ((SmallColumnSize - strlen(s))/2), s);
+                mvwprintw(win, 1, sizeOfPart + 1 + (SmallColumnSize+1) + ((SmallColumnSize - strlen(p))/2), p);
 
                 wattroff(win, COLOR_PAIR(2));
             }
@@ -95,8 +114,8 @@ void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode) {
     }
 }
 
-void Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode) {
-    vector<FileEntry *> *files = dir->getDirectory();
+int Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode, int offset) {
+    std::vector<FileEntry *> *files = dir->getDirectory();
 
     // files count in the directory
     mvwprintw(win, 0, config->getCols() / 2 - 7, " %d ", files->size());
@@ -124,65 +143,106 @@ void Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, Lis
 
     int i = 0;
     for(auto const &entry: *files) {
+        if (i < offset) {
+            i++;
+            continue;
+        }
+
         if (listMode == Full) {
-            int sizeOfPart = config->getCols() / 2 - SmallColumnSize-1 - SmallColumnSize-1;
-            mvwprintw(win, 2 + i, 1, " %s", entry->name.c_str());
-            mvwprintw(win, 2 + i, sizeOfPart, " %d", entry->size);
-            mvwprintw(win, 2 + i, sizeOfPart + SmallColumnSize, " %s", entry->perm.c_str());
+            int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
+
+            mvwprintw(win, 2 + i - offset, 1, " %s", entry->name.c_str());
+            mvwprintw(win, 2 + i - offset, sizeOfPart+1, " %d", entry->size);
+            mvwprintw(win, 2 + i - offset, sizeOfPart + SmallColumnSize+2, " %s", entry->perm.c_str());
         } else if (listMode == Brief) {
-            mvwprintw(win, 2 + i, 1, " %s", entry->name.c_str());
+            mvwprintw(win, 2 + i - offset, 1, " %s", entry->name.c_str());
         } else if (listMode == Custom) {
             // todo
         }
         i++;
-        if (i == config->getRowsInPanel())
-            break;
+        if ((i - offset) == config->getRowsInPanel())
+            return i - offset;
     }
+
+    return i - offset;
 }
 
 void Workspace::show() {
     bool ex = false;
+    int cursorLengh = 0;
 
-    // show panels
-    PANEL_DATA leftPanelData;
-    leftPanelData.position = 0;
-    leftPanelData.path = config->getLeftPath();
-    leftPanelData.dir = new Directory(config);
-    leftPanelData.dir->setPath(config->getLeftPath());
+    // left panel
+    PANEL_DATA lpd;
+    lpd.leftRight = false;
+    lpd.position = 0;
+    lpd.offset = 0;
+    lpd.dir = new Directory(config);
+    lpd.dir->setPath(config->getLeftPath());
+    lpd.totalFiles = lpd.dir->getDirectory()->size();
+
+    if (config->getLeftPanelMode() == Full)
+        cursorLengh = config->getCols() / 2 - SmallColumnSize-2 - SmallColumnSize-2;
+    else if (config->getLeftPanelMode() == Brief)
+        cursorLengh = config->getCols() / 4 - 2;
+    else {
+        leftCustomMode->clear();
+        Utils::split(leftCustomMode, config->getLeftCustomMode(), ' ');
+        cursorLengh = (leftCustomMode->size() - 1) * SmallColumnSize - 1 /**/;
+    }
+    lpd.cursorLengh = cursorLengh;
+
     WINDOW *leftWindow = createWindow(0, 0, config->getRows() - 1, config->getCols() / 2, 1);
-    fillWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode());
-    printFiles(leftWindow, leftPanelData.dir, config->getLeftPanelSort(), config->getLeftPanelMode());
+    fillWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode(), leftCustomMode);
+    printFiles(leftWindow, lpd.dir, config->getLeftPanelSort(), config->getLeftPanelMode(), 0);
     PANEL *leftPanel = new_panel(leftWindow);
 
-    PANEL_DATA rightPanelData;
-    rightPanelData.position = 0;
-    rightPanelData.path = config->getRightPath();
-    rightPanelData.dir = new Directory(config);
-    rightPanelData.dir->setPath(config->getRightPath());
+    // right panel
+    PANEL_DATA rpd;
+    rpd.leftRight = true;
+    rpd.position = 0;
+    rpd.offset = 0;
+    rpd.dir = new Directory(config);
+    rpd.dir->setPath(config->getRightPath());
+    rpd.totalFiles = rpd.dir->getDirectory()->size();
+
+    if (config->getRightPanelMode() == Full)
+        cursorLengh = config->getCols() / 2 - SmallColumnSize-2 - SmallColumnSize-2;
+    else if (config->getRightPanelMode() == Brief)
+        cursorLengh = config->getCols() / 4 -  2;
+    else {
+        rightCustomMode->clear();
+        Utils::split(rightCustomMode, config->getRightCustomMode(), ' ');
+        cursorLengh = (rightCustomMode->size() - 1) * SmallColumnSize - 1 /**/;
+    }
+    rpd.cursorLengh = cursorLengh;
+
     WINDOW *rightWindow = createWindow(0, config->getCols() / 2, config->getRows() - 1, config->getCols() / 2, 1);
-    fillWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode());
-    printFiles(rightWindow, rightPanelData.dir, config->getRightPanelSort(), config->getRightPanelMode());
+    fillWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode(), rightCustomMode);
+    printFiles(rightWindow, rpd.dir, config->getRightPanelSort(), config->getRightPanelMode(), 0);
     PANEL *rightPanel = new_panel(rightWindow);
 
-    leftPanelData.next = rightPanel;
-    rightPanelData.next = leftPanel;
+    // set panels sources
+    lpd.next = rightPanel;
+    rpd.next = leftPanel;
 
-    set_panel_userptr(leftPanel, &leftPanelData);
-    set_panel_userptr(rightPanel, &rightPanelData);
+    set_panel_userptr(leftPanel, &lpd);
+    set_panel_userptr(rightPanel, &rpd);
 
     // current panel
     currentPanel = leftPanel;
 
     // print path at the header
     wattron(leftWindow, COLOR_PAIR(3));
-    mvwprintw(leftWindow, 0, 2, " %s ", const_cast<char*>(leftPanelData.path.c_str()));
+    mvwprintw(leftWindow, 0, 2, " %s ", const_cast<char*>(config->getLeftPath().c_str()));
     wattroff(leftWindow, COLOR_PAIR(3));
 
     wattron(rightWindow, COLOR_PAIR(1));
-    mvwprintw(rightWindow, 0, 2, " %s ", const_cast<char*>(rightPanelData.path.c_str()));
+    mvwprintw(rightWindow, 0, 2, " %s ", const_cast<char*>(config->getRightPath().c_str()));
     wattroff(rightWindow, COLOR_PAIR(0));
 
-    mvwchgat(currentPanel->win, 2 + leftPanelData.position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
+    // print cursor
+    PANEL_DATA *d = (PANEL_DATA *)panel_userptr(currentPanel);
+    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
 
     // and path string
     commandString = config->getCurrentPath() + ' ' + config->getUserPromp() + ' ' + cmd + ' ';
@@ -195,7 +255,6 @@ void Workspace::show() {
     // read keypressed
     while (!ex) {
         int c = mvgetch(config->getRows()-1,commandString.size() - 1);
-        PANEL_DATA *d = (PANEL_DATA *)panel_userptr(currentPanel);
         switch (c) {
             // functional
             case KEY_F(1):
@@ -226,36 +285,59 @@ void Workspace::show() {
 
             // moving keys
             case 9: // TAB
-                mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 1, NULL);
+                mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 1, NULL);
 
                 wattron(currentPanel->win, COLOR_PAIR(1));
-                mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(d->path.c_str()));
+                if (d->leftRight)
+                    mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(config->getRightPath().c_str()));
+                else
+                    mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(config->getLeftPath().c_str()));
                 wattroff(currentPanel->win, COLOR_PAIR(0));
 
                 currentPanel = d->next;
-
-                mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
-
-                // print path at the header
                 d = (PANEL_DATA *)panel_userptr(currentPanel);
+
+                mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
+
                 wattron(currentPanel->win, COLOR_PAIR(3));
-                mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(d->path.c_str()));
+                if (d->leftRight)
+                    mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(config->getRightPath().c_str()));
+                else
+                    mvwprintw(currentPanel->win, 0, 2, " %s ", const_cast<char*>(config->getLeftPath().c_str()));
                 wattroff(currentPanel->win, COLOR_PAIR(3));
 
                 top_panel(currentPanel);
                 break;
             case KEY_UP:
                 if (d->position != 0) {
-                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 1, NULL);
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 1, NULL);
                     d->position--;
-                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
+                } else if (d->offset > 0) {
+                    mvwchgat(currentPanel->win, 2, 1, d->cursorLengh, A_COLOR, 1, NULL);
+                    d->offset--;
+                    if(d->leftRight)
+                        printFiles(currentPanel->win, d->dir, config->getRightPanelSort(), config->getRightPanelMode(), d->offset);
+                    else
+                        printFiles(currentPanel->win, d->dir, config->getLeftPanelSort(), config->getLeftPanelMode(), d->offset);
+
+                    mvwchgat(currentPanel->win, 2, 1, d->cursorLengh, A_COLOR, 3, NULL);
                 }
                 break;
             case KEY_DOWN:
-                if (d->position < config->getRowsInPanel()-1) {
-                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 1, NULL);
+                if ((d->position < d->totalFiles-1) && (d->position < config->getRowsInPanel()-1)) {
+                    mvwchgat(currentPanel->win, 2 + d->position-d->offset, 1, d->cursorLengh, A_COLOR, 1, NULL);
                     d->position++;
-                    mvwchgat(currentPanel->win, 2 + d->position, 1, config->getCols()/4 - 2, A_COLOR, 3, NULL);
+                    mvwchgat(currentPanel->win, 2 + d->position-d->offset, 1, d->cursorLengh, A_COLOR, 3, NULL);
+                } else if (((d->position+d->offset) != d->totalFiles-1) && (d->position == config->getRowsInPanel()-1)) {
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 1, NULL);
+                    d->offset++;
+                    if(d->leftRight)
+                        printFiles(currentPanel->win, d->dir, config->getRightPanelSort(), config->getRightPanelMode(), d->offset);
+                    else
+                        printFiles(currentPanel->win, d->dir, config->getLeftPanelSort(), config->getLeftPanelMode(), d->offset);
+
+                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
                 }
                 break;
             case KEY_LEFT:
@@ -294,7 +376,7 @@ void Workspace::show() {
                 endwin();
                 // append "cd `d->path`;" to begin of cmd
                 system(const_cast<char *>(cmd.c_str()));
-                cout << "Press any key to continue...";
+                std::cout << "Press any key to continue...";
                 getch();
                 refresh();
 

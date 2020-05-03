@@ -10,16 +10,16 @@
 enum FileType { unknown, fifo, chardev, directory, blockdev, regular, softlink, socket};
 
 struct FileEntry {
-    string name;
+    std::string name;
     int uid, gid;
-    string linkedName;
+    std::string linkedName;
     bool linkOk;
     int size;
     FileType type;
-    string atime;
-    string mtime;
-    string ctime;
-    string perm;
+    std::string atime;
+    std::string mtime;
+    std::string ctime;
+    std::string perm;
 };
 
 class Directory {
@@ -27,8 +27,8 @@ class Directory {
     Directory(Config *pConfig);
     ~Directory();
 
-    void setPath(string path);
-    vector<FileEntry *> *getDirectory() throw (string);
+    void setPath(std::string path);
+    std::vector<FileEntry *> *getDirectory() throw (std::string);
 
   private:
     Config *config;
