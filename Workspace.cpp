@@ -114,7 +114,7 @@ void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, std::vect
     }
 }
 
-int Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode, int offset) {
+int Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode, int cursorLengh, int offset) {
     std::vector<FileEntry *> *files = dir->getDirectory();
 
     // files count in the directory
@@ -150,6 +150,10 @@ int Workspace::printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, List
 
         if (listMode == Full) {
             int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
+
+            // padding right
+            while(entry->name.size() < (cursorLengh-1))
+                entry->name.append(" ");
 
             mvwprintw(win, 2 + i - offset, 1, " %s", entry->name.c_str());
             mvwprintw(win, 2 + i - offset, sizeOfPart+1, " %d", entry->size);
@@ -193,7 +197,7 @@ void Workspace::show() {
 
     WINDOW *leftWindow = createWindow(0, 0, config->getRows() - 1, config->getCols() / 2, 1);
     fillWindow(leftWindow, config->getLeftPanelType(), config->getLeftPanelMode(), leftCustomMode);
-    printFiles(leftWindow, lpd.dir, config->getLeftPanelSort(), config->getLeftPanelMode(), 0);
+    printFiles(leftWindow, lpd.dir, config->getLeftPanelSort(), config->getLeftPanelMode(), cursorLengh, 0);
     PANEL *leftPanel = new_panel(leftWindow);
 
     // right panel
@@ -218,7 +222,7 @@ void Workspace::show() {
 
     WINDOW *rightWindow = createWindow(0, config->getCols() / 2, config->getRows() - 1, config->getCols() / 2, 1);
     fillWindow(rightWindow, config->getRightPanelType(), config->getRightPanelMode(), rightCustomMode);
-    printFiles(rightWindow, rpd.dir, config->getRightPanelSort(), config->getRightPanelMode(), 0);
+    printFiles(rightWindow, rpd.dir, config->getRightPanelSort(), config->getRightPanelMode(), cursorLengh, 0);
     PANEL *rightPanel = new_panel(rightWindow);
 
     // set panels sources
@@ -317,9 +321,9 @@ void Workspace::show() {
                     mvwchgat(currentPanel->win, 2, 1, d->cursorLengh, A_COLOR, 1, NULL);
                     d->offset--;
                     if(d->leftRight)
-                        printFiles(currentPanel->win, d->dir, config->getRightPanelSort(), config->getRightPanelMode(), d->offset);
+                        printFiles(currentPanel->win, d->dir, config->getRightPanelSort(), config->getRightPanelMode(), d->cursorLengh, d->offset);
                     else
-                        printFiles(currentPanel->win, d->dir, config->getLeftPanelSort(), config->getLeftPanelMode(), d->offset);
+                        printFiles(currentPanel->win, d->dir, config->getLeftPanelSort(), config->getLeftPanelMode(), d->cursorLengh, d->offset);
 
                     mvwchgat(currentPanel->win, 2, 1, d->cursorLengh, A_COLOR, 3, NULL);
                 }
@@ -333,9 +337,9 @@ void Workspace::show() {
                     mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 1, NULL);
                     d->offset++;
                     if(d->leftRight)
-                        printFiles(currentPanel->win, d->dir, config->getRightPanelSort(), config->getRightPanelMode(), d->offset);
+                        printFiles(currentPanel->win, d->dir, config->getRightPanelSort(), config->getRightPanelMode(), d->cursorLengh, d->offset);
                     else
-                        printFiles(currentPanel->win, d->dir, config->getLeftPanelSort(), config->getLeftPanelMode(), d->offset);
+                        printFiles(currentPanel->win, d->dir, config->getLeftPanelSort(), config->getLeftPanelMode(), d->cursorLengh, d->offset);
 
                     mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
                 }

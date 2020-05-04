@@ -43,5 +43,5 @@ private:
 
     WINDOW *createWindow(int y, int x, int rows, int cols, int colour);
     void fillWindow(WINDOW *win, PanelType type, ListMode mode, std::vector<std::string> *custom);
-    int printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode, int offset);
+    int printFiles(WINDOW *win, Directory *dir, SortOrder sortOrder, ListMode listMode, int cursorLengh, int offset);
 };
