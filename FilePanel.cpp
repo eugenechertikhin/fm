@@ -116,11 +116,14 @@ void FilePanel::redraw() {
 }
 
 #define STATUS_LINE 3
-#define EXTRA_COLUMN 10
+#define EXTRA_COLUMN 11
 #define TOP_LINE 1
 #define COLUMN_NAME_LINE 1
 
 void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
+    this->cols = cols;
+    this->rows = rows;
+
     // headers
     char n[] = "Name";
     char s[] = "Size";
@@ -194,18 +197,14 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
 
             // print files
             for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
+                util::Utils::paddingRight(&files->at(i+offset)->name, cursorLengh-1);
                 mvwprintw(win, 2+i, 2, "%s", files->at(i+offset)->name.c_str());
 
-//            int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
-//
-//            util::Utils::paddingRight(&entry->name, cursorLengh-1);
-//            mvwprintw(win, 2 + i - offset, 2, "%s", entry->name.c_str());
+                std::string size = std::to_string(files->at(i+offset)->size);
+                util::Utils::paddingLeft(&size, EXTRA_COLUMN-1);
+                mvwprintw(win, 2+i, 2 + cursorLengh, size.c_str());
 
-//            std::string size = std::to_string(entry->size);
-//            util::Utils::paddingLeft(&size, SmallColumnSize);
-//            mvwprintw(win, 2 + i - offset, sizeOfPart+1, size.c_str());
-
-//            mvwprintw(win, 2 + i - offset, sizeOfPart + SmallColumnSize+2, "%s", entry->perm.c_str());
+                mvwprintw(win, 2+i, 2+cursorLengh + EXTRA_COLUMN, "%s", files->at(i+offset)->perm.c_str());
             }
 
         } else if (mode == Brief) {
@@ -223,10 +222,17 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
 
             // print files
             for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
-//            util::Utils::paddingRight(&entry->name, cursorLengh-1);
+                util::Utils::paddingRight(&files->at(i+offset)->name, cursorLengh-1);
                 mvwprintw(win, 2 + i, 2, "%s", files->at(i+offset)->name.c_str());
             }
         }
+
+        // print status line
+        util::Utils::paddingRight(&files->at(pos+offset)->name, cols-22);
+        mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", files->at(pos+offset)->name.c_str());
+        mvwprintw(win, rowsCount + STATUS_LINE, cols-22, "%d", files->at(pos+offset)->size);
+        mvwprintw(win, rowsCount + STATUS_LINE, cols-11, "%s", files->at(pos+offset)->perm.c_str());
+
     } else if (type == Tree) {
         // todo
     } else if (type == Info) {
@@ -272,6 +278,13 @@ void FilePanel::moveUp() {
         offset--;
 
     // print files
+
+    // print status line
+    util::Utils::paddingRight(&files->at(pos+offset)->name, cols-22);
+    mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", files->at(pos+offset)->name.c_str());
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-22, "%d", files->at(pos+offset)->size);
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-11, "%s", files->at(pos+offset)->perm.c_str());
+
     showCursor(false);
 }
 
@@ -281,15 +294,29 @@ void FilePanel::moveDown() {
 
     // print files
 
+    // print status line
+    util::Utils::paddingRight(&files->at(pos+offset)->name, cols-22);
+    mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", files->at(pos+offset)->name.c_str());
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-22, "%d", files->at(pos+offset)->size);
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-11, "%s", files->at(pos+offset)->perm.c_str());
+
     showCursor(false);
 }
 
 void FilePanel::moveLeft() {
-
+    // print status line
+    util::Utils::paddingRight(&files->at(pos+offset)->name, cols-22);
+    mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", files->at(pos+offset)->name.c_str());
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-22, "%d", files->at(pos+offset)->size);
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-11, "%s", files->at(pos+offset)->perm.c_str());
 }
 
 void FilePanel::moveRight() {
-
+    // print status line
+    util::Utils::paddingRight(&files->at(pos+offset)->name, cols-22);
+    mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", files->at(pos+offset)->name.c_str());
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-22, "%d", files->at(pos+offset)->size);
+    mvwprintw(win, rowsCount + STATUS_LINE, cols-11, "%s", files->at(pos+offset)->perm.c_str());
 }
 
 void FilePanel::enter() {

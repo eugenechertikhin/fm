@@ -52,6 +52,9 @@ private:
     bool sortOrder; // true == asc
     bool showDot, showBorder, showStatus, showFree, showTotal, useSi;
 
+    int cols;
+    int rows;
+
     Directory *directory;
     std::vector<FileEntry *> *files;
     int pos;
