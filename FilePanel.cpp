@@ -153,6 +153,7 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
         directory = new Directory();
         files = directory->getDirectory(path, showDot);
         sortDirectory(files);
+        filesCount = files->size();
 
         // show total files count
         mvwprintw(win, 0, cols - 7, " %d ", files->size());
@@ -172,35 +173,45 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
         }
 
         if (mode == Custom) {
+            rowsCount = rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE;
+            cursorLengh = cols - (EXTRA_COLUMN * (modeParams->size()-1)) - 2;
+
             for (int i = 0; i < rows-1 - STATUS_LINE; i++) {
                 for (int j = 1; j < modeParams->size(); j++)
                     mvwaddch(win, i + 1, cols - (EXTRA_COLUMN * j) - 1, ACS_VLINE);
             }
 
             wattron(win, COLOR_PAIR(YELLOW_ON_BLUE));
+
             // print first column name
             mvwprintw(win, 1, 2, modeParams->at(0).c_str());
 
             // print extra custom column names
             for (int j = 1; j < modeParams->size(); j++)
                 mvwprintw(win, 1, 1+cols - (EXTRA_COLUMN * (modeParams->size()-j)), modeParams->at(j).c_str());
+
             wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
 
             // print files
             for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
-                mvwprintw(win, 2+i, 2, "%s", files->at(i)->name.c_str());
+                mvwprintw(win, 2+i, 2, "%s", files->at(i+offset)->name.c_str());
 
 //            int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
 //
 //            util::Utils::paddingRight(&entry->name, cursorLengh-1);
 //            mvwprintw(win, 2 + i - offset, 2, "%s", entry->name.c_str());
+
 //            std::string size = std::to_string(entry->size);
 //            util::Utils::paddingLeft(&size, SmallColumnSize);
 //            mvwprintw(win, 2 + i - offset, sizeOfPart+1, size.c_str());
+
 //            mvwprintw(win, 2 + i - offset, sizeOfPart + SmallColumnSize+2, "%s", entry->perm.c_str());
             }
 
         } else if (mode == Brief) {
+            rowsCount = rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE;
+            cursorLengh = cols/2 - 2;
+
             for (int i = 0; i < rows-1 - STATUS_LINE; i++)
                 mvwaddch(win, i + 1, cols/2 - 1, ACS_VLINE);
 
@@ -213,7 +224,7 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
             // print files
             for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
 //            util::Utils::paddingRight(&entry->name, cursorLengh-1);
-                mvwprintw(win, 2 + i, 2, "%s", files->at(i)->name.c_str());
+                mvwprintw(win, 2 + i, 2, "%s", files->at(i+offset)->name.c_str());
             }
         }
     } else if (type == Tree) {
@@ -227,23 +238,60 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
     wrefresh(win);
 }
 
-void FilePanel::hideCursor() {
-    if (type == FileList || type == QuickView)
-        mvwchgat(win, 0, 2, path.size()+2, A_COLOR, 1, NULL);
+void FilePanel::hideCursor(bool p) {
+    if (type == FileList || type == QuickView) {
+        // highlight path
+        if (p)
+            mvwchgat(win, 0, 2, path.size() + 2, A_COLOR, WHITE_ON_BLUE, NULL);
 
-    // todo print cursor
-
-    //    mvwchgat(win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
-
+        // print cursor
+        mvwchgat(win, 2 + pos, 1, cursorLengh, A_COLOR, WHITE_ON_BLUE, NULL);
+    }
     wrefresh(win);
 }
-void FilePanel::showCursor() {
-    if (type == FileList || type == QuickView)
-        mvwchgat(win, 0, 2, path.size()+2, A_COLOR, 3, NULL);
+void FilePanel::showCursor(bool p) {
+    if (type == FileList || type == QuickView) {
+        // highlight path
+        if (p)
+            mvwchgat(win, 0, 2, path.size() + 2, A_COLOR, BLACK_ON_CYAN, NULL);
 
-    // todo print cursor
-
-    //    mvwchgat(win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
-
+        // print cursor
+        mvwchgat(win, 2 + pos, 1, cursorLengh, A_COLOR, BLACK_ON_CYAN, NULL);
+    }
     wrefresh(win);
+}
+
+void FilePanel::moveUp() {
+    if (pos == 0 && offset == 0)
+        return;
+
+    hideCursor(false);
+    if (pos > 0)
+        pos--;
+    else
+        offset--;
+
+    // print files
+    showCursor(false);
+}
+
+void FilePanel::moveDown() {
+    hideCursor(false);
+    pos++;
+
+    // print files
+
+    showCursor(false);
+}
+
+void FilePanel::moveLeft() {
+
+}
+
+void FilePanel::moveRight() {
+
+}
+
+void FilePanel::enter() {
+
 }

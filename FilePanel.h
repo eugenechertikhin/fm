@@ -32,13 +32,14 @@ public:
     void draw(int y, int x, int rows, int cols, bool colour);
     void redraw();
 
-    void hideCursor();
-    void showCursor();
+    void hideCursor(bool p);
+    void showCursor(bool p);
 
     void moveUp();
     void moveDown();
     void moveLeft();
     void moveRight();
+    void enter();
 
 private:
     void sortDirectory(std::vector<FileEntry *> *files);
@@ -56,6 +57,8 @@ private:
     int pos;
     int offset;
     int cursorLengh;
+    int filesCount;
+    int rowsCount;
 
     WINDOW *win;
     FilePanel *next;

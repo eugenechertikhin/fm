@@ -38,7 +38,7 @@ void Workspace::show(int rows, int cols) {
     right->setNext(left);
 
     current = left;
-    current->showCursor();
+    current->showCursor(true);
 
     // read keypressed
     while (!ex) {
@@ -91,45 +91,21 @@ void Workspace::show(int rows, int cols) {
 
             // moving keys
             case 9: // TAB
-                current->hideCursor();
+                current->hideCursor(true);
                 current = current->getNext();
-                current->showCursor();
+                current->showCursor(true);
                 break;
             case KEY_UP:
-//                if (d->position != 0) {
-//                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 1, NULL);
-//                    d->position--;
-//                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
-//                } else if (d->offset > 0) {
-//                    mvwchgat(currentPanel->win, 2, 1, d->cursorLengh, A_COLOR, 1, NULL);
-//                    d->offset--;
-//                    if(d->leftRight)
-//                        printFiles(currentPanel->win, d->dir, config->getRightSort(), config->getRightMode(), d->cursorLengh, d->offset);
-//                    else
-//                        printFiles(currentPanel->win, d->dir, config->getLeftSort(), config->getLeftMode(), d->cursorLengh, d->offset);
-//
-//                    mvwchgat(currentPanel->win, 2, 1, d->cursorLengh, A_COLOR, 3, NULL);
-//                }
+                current->moveUp();
                 break;
             case KEY_DOWN:
-//                if ((d->position < d->totalFiles-1) && (d->position < config->getRowsInPanel()-1)) {
-//                    mvwchgat(currentPanel->win, 2 + d->position-d->offset, 1, d->cursorLengh, A_COLOR, 1, NULL);
-//                    d->position++;
-//                    mvwchgat(currentPanel->win, 2 + d->position-d->offset, 1, d->cursorLengh, A_COLOR, 3, NULL);
-//                } else if (((d->position+d->offset) != d->totalFiles-1) && (d->position == config->getRowsInPanel()-1)) {
-//                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 1, NULL);
-//                    d->offset++;
-//                    if(d->leftRight)
-//                        printFiles(currentPanel->win, d->dir, config->getRightSort(), config->getRightMode(), d->cursorLengh, d->offset);
-//                    else
-//                        printFiles(currentPanel->win, d->dir, config->getLeftSort(), config->getLeftMode(), d->cursorLengh, d->offset);
-//
-//                    mvwchgat(currentPanel->win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
-//                }
+                current->moveDown();
                 break;
             case KEY_LEFT:
+                current->moveLeft();
                 break;
             case KEY_RIGHT:
+                current->moveRight();
                 break;
 
             // redraw screen ^L
@@ -160,7 +136,7 @@ void Workspace::show(int rows, int cols) {
                 break;
             case 10: // enter key
                 if (cmd.size() < 1) {
-                    // try to change direrctory or run file
+                    current->enter();
                     break;
                 }
 
