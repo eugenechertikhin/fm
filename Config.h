@@ -3,14 +3,34 @@
 //
 
 #pragma once
+
 #include <string>
 
 #define CONFIG_DIR "~/.fc"
 #define CONFIG_NAME "config"
 
-enum PanelType {FileList, QuickView, Info, Tree};
-enum ListMode  {Full, Brief, Custom};
-enum SortOrder {Unsorted, Name, Ext, Size, MTime, ATime, CTime};
+enum PanelType {
+    FileList,
+    QuickView,
+    Info,
+    Tree
+};
+
+enum ListMode  {
+    Full,
+    Brief,
+    Custom
+};
+
+enum SortType {
+    Unsorted,
+    Name,
+    Ext,
+    Size,
+    MTime,
+    ATime,
+    CTime
+};
 
 class Config {
 
@@ -20,58 +40,64 @@ class Config {
 
     void loadConfig();
 
-    void forceColor();
-    void forceBlack();
+    void setColor(bool colour);
     bool isColour();
-
-    void setSize(int row, int col);
-    int getCols();
-    int getRows();
-    int getRowsInPanel();
 
     std::string getCurrentPath();
     void setCurrentPath(const std::string &sPath);
+
     void setRoot(bool isRoot);
     char getUserPromp();
 
     // left panel
     std::string getLeftPath();
     void setLeftPath(const std::string &path);
-    std::string getLeftCustomMode();
-    void setLeftCustomMode(std::string custom);
-    PanelType getLeftPanelType();
-    void setLeftPanelType(PanelType type);
-    ListMode getLeftPanelMode();
-    void setLeftPanelMode(ListMode mode);
-    SortOrder getLeftPanelSort();
-    void setLeftPanelSort(SortOrder sort);
+    PanelType getLeftType();
+    void setLeftType(PanelType type);
+    ListMode getLeftMode();
+    void setLeftMode(ListMode mode);
+    std::string getLeftModeParams();
+    void setLeftModeParams(std::string params);
+    SortType getLeftSort();
+    void setLeftSort(SortType sort);
+    bool getLeftSortOrder();
+    void setLeftSortOrder(bool order);
 
     // right panel
     std::string getRightPath();
     void setRightPath(const std::string &path);
-    std::string getRightCustomMode();
-    void setRightCustomMode(std::string custom);
-    PanelType getRightPanelType();
-    void setRightPanelType(PanelType type);
-    ListMode getRightPanelMode();
-    void setRightPanelMode(ListMode mode);
-    SortOrder getRightPanelSort();
-    void setRightPanelSort(SortOrder sort);
+    PanelType getRightType();
+    void setRightType(PanelType type);
+    ListMode getRightMode();
+    void setRightMode(ListMode mode);
+    std::string getRightModeParams();
+    void setRightModeParams(std::string params);
+    SortType getRightSort();
+    void setRightSort(SortType sort);
+    bool getRightSortOrder();
+    void setRightSortOrder(bool order);
 
     bool isShowDot();
     void setShowDot(bool f);
+
     bool isShowBorder();
     void setShowBorder(bool f);
+
     bool isShowStatus();
     void setShowStatus(bool f);
+
     bool isShowFree();
     void setShowFree(bool f);
+
     bool isShowTotal();
     void setShowTotal(bool f);
+
     bool isShowMenuBar();
     void setShowMenuBar(bool f);
+
     bool isShowKeyBar();
     void setShowKeyBar(bool f);
+
     bool isUseSi();
     void setUseSi(bool f);
 
@@ -87,28 +113,31 @@ class Config {
     void setViewer(const std::string &filename);
     std::string getViewer();
 
+    bool isConfirmExit();
+    void setConfirmExit(bool confirm);
+
 private:
     std::string defaultPath;
     bool color, root;
-    int rows, cols;
+//    int rows, cols;
 
-    // config
     std::string leftPath;
-    std::string leftCustomMode;
-    PanelType leftPanelType;
-    ListMode leftPanelMode;
-    SortOrder leftPanelSort;
+    PanelType leftType;
+    ListMode leftMode;
+    std::string leftModeParams;
+    SortType leftSort;
+    bool leftSortOrder;
 
     std::string rightPath;
-    std::string rightCustomMode;
-    PanelType rightPanelType;
-    ListMode rightPanelMode;
-    SortOrder rightPanelSort;
+    PanelType rightType;
+    ListMode rightMode;
+    std::string rightModeParams;
+    SortType rightSort;
+    bool rightSortOrder;
 
     bool internalEdit, internalView;
     std::string editorCmd, viewerCmd;
 
-    int hotPanels;
     bool showDot, showBorder, showStatus, showFree, showTotal, showMenuBar, showKeyBar, useSi;
     bool confirmExit, confirmDelete, confirmOverride, confirmExecute;
 };

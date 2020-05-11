@@ -5,9 +5,17 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "Config.h"
 
-enum FileType { unknown, fifo, chardev, directory, blockdev, regular, softlink, socket};
+enum FileType {
+    unknown,
+    fifo,
+    chardev,
+    directory,
+    blockdev,
+    regular,
+    softlink,
+    socket
+};
 
 struct FileEntry {
     std::string name;
@@ -24,16 +32,12 @@ struct FileEntry {
 
 class Directory {
   public:
-    Directory(Config *pConfig);
+    Directory();
     ~Directory();
 
-    void setPath(std::string path);
-    std::vector<FileEntry *> *getDirectory() throw (std::string);
+    std::vector<FileEntry *> *getDirectory(std::string path, bool showDot) throw (std::string);
 
   private:
-    Config *config;
-    std::string path;
-    bool force;
     std::vector<FileEntry *> *files;
 };
 

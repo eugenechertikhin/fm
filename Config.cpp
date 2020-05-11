@@ -11,60 +11,52 @@ Config::Config() {
 
 Config::~Config() {
     // save config to ini
+    // todo
 }
 
 void Config::loadConfig() {
-    // load config from inni
-
-    // temp
+    // initial values
     root = false;
     color = true;
     showDot = true;
-    hotPanels = 0;
 
-    leftPanelType = FileList;
-    leftPanelMode = Full;
-    leftPanelSort = Name;
+    leftType = FileList;
+    leftMode = Full;
+    leftSort = Name;
+    leftSortOrder = false;
 
-    rightPanelType = FileList;
-    rightPanelMode = Brief; // Custom;
-    rightCustomMode = "name size modify access create perm";
-    rightPanelSort = Name;
+    rightType = FileList;
+    rightMode = Brief; // Custom;
+    rightModeParams = "name size modify access create perm";
+    rightSort = Name;
+    rightSortOrder = false;
+
+    confirmExit = true;
+    confirmDelete = true;
+    confirmOverride = true;
+    confirmExecute = true;
+
+    // load config from inni
+    // todo
 }
 
-void Config::forceColor() {
-    color = true;
+void Config::setColor(bool colour) {
+    color = colour;
 }
-
-void Config::forceBlack() {
-    color = false;
-}
-
-void Config::setSize(int row, int col) {
-    rows = row;
-    cols = col;
-}
-
 bool Config::isColour() {
     return color;
 }
 
-int Config::getCols() {
-    return cols;
+void Config::setCurrentPath(const std::string &sPath) {
+    this->defaultPath = sPath;
 }
-
-int Config::getRows() {
-    return rows;
-}
-
-int Config::getRowsInPanel() {
-    return rows - 2 /* top size */ - 1 /* cmd line */ - 3 /* file info line */;
+std::string Config::getCurrentPath() {
+    return defaultPath;
 }
 
 void Config::setRoot(bool isRoot) {
     root = isRoot;
 }
-
 char Config::getUserPromp() {
     if(root)
         return '#';
@@ -80,29 +72,35 @@ std::string Config::getLeftPath() {
 void Config::setLeftPath(const std::string &path) {
     leftPath = path;
 }
-std::string Config::getLeftCustomMode() {
-    return leftCustomMode;
+PanelType Config::getLeftType() {
+    return leftType;
 }
-void Config::setLeftCustomMode(std::string custom) {
-    leftCustomMode = custom;
+void Config::setLeftType(PanelType type) {
+    leftType = type;
 }
-PanelType Config::getLeftPanelType() {
-    return leftPanelType;
+ListMode Config::getLeftMode() {
+    return leftMode;
 }
-void Config::setLeftPanelType(PanelType type) {
-    leftPanelType = type;
+void Config::setLeftMode(ListMode mode) {
+    leftMode = mode;
 }
-ListMode Config::getLeftPanelMode() {
-    return leftPanelMode;
+std::string Config::getLeftModeParams() {
+    return leftModeParams;
 }
-void Config::setLeftPanelMode(ListMode mode) {
-    leftPanelMode = mode;
+void Config::setLeftModeParams(std::string params) {
+    leftModeParams = params;
 }
-SortOrder Config::getLeftPanelSort() {
-    return leftPanelSort;
+SortType Config::getLeftSort() {
+    return leftSort;
 }
-void Config::setLeftPanelSort(SortOrder sort) {
-    leftPanelSort = sort;
+void Config::setLeftSort(SortType sort) {
+    leftSort = sort;
+}
+bool Config::getLeftSortOrder() {
+    return leftSortOrder;
+}
+void Config::setLeftSortOrder(bool order) {
+    leftSortOrder = order;
 }
 
 std::string Config::getRightPath() {
@@ -113,29 +111,35 @@ std::string Config::getRightPath() {
 void Config::setRightPath(const std::string &path) {
     rightPath = path;
 }
-std::string Config::getRightCustomMode() {
-    return rightCustomMode;
+PanelType Config::getRightType() {
+    return rightType;
 }
-void Config::setRightCustomMode(std::string custom) {
-    rightCustomMode = custom;
+void Config::setRightType(PanelType type) {
+    rightType = type;
 }
-PanelType Config::getRightPanelType() {
-    return rightPanelType;
+ListMode Config::getRightMode() {
+    return rightMode;
 }
-void Config::setRightPanelType(PanelType type) {
-    rightPanelType = type;
+void Config::setRightMode(ListMode mode) {
+    rightMode = mode;
 }
-ListMode Config::getRightPanelMode() {
-    return rightPanelMode;
+std::string Config::getRightModeParams() {
+    return rightModeParams;
 }
-void Config::setRightPanelMode(ListMode mode) {
-    rightPanelMode = mode;
+void Config::setRightModeParams(std::string params) {
+    rightModeParams = params;
 }
-SortOrder Config::getRightPanelSort() {
-    return rightPanelSort;
+SortType Config::getRightSort() {
+    return rightSort;
 }
-void Config::setRightPanelSort(SortOrder sort) {
-    rightPanelSort = sort;
+void Config::setRightSort(SortType sort) {
+    rightSort = sort;
+}
+bool Config::getRightSortOrder() {
+    return rightSortOrder;
+}
+void Config::setRightSortOrder(bool order) {
+    rightSortOrder = order;
 }
 
 bool Config::isShowDot() {
@@ -194,26 +198,16 @@ void Config::setUseSi(bool f) {
     useSi = f;
 }
 
-void Config::setCurrentPath(const std::string &sPath) {
-    this->defaultPath = sPath;
-}
-
-std::string Config::getCurrentPath() {
-    return defaultPath;
-}
-
 bool Config::isInternalEdit() {
     return this->internalEdit;
 }
 void Config::setInternalEdit() {
     this->internalEdit = true;
 }
-
 void Config::setEditor(const std::string &filename) {
     this->internalEdit = false;
     this->editorCmd = filename;
 }
-
 std::string Config::getEditor() {
     return editorCmd;
 }
@@ -221,16 +215,20 @@ std::string Config::getEditor() {
 bool Config::isInternalView() {
     return this->internalView;
 }
-
 void Config::setInternalView() {
     this->internalView = true;
 }
-
 void Config::setViewer(const std::string &filename) {
     this->internalView = false;
     this->viewerCmd = filename;
 }
-
 std::string Config::getViewer() {
     return viewerCmd;
+}
+
+bool Config::isConfirmExit() {
+    return confirmExit;
+}
+void Config::setConfirmExit(bool confirm) {
+    confirmExit = confirm;
 }

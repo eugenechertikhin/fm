@@ -9,36 +9,28 @@
 #include <time.h>
 #include "Directory.h"
 
-Directory::Directory(Config *pConfig) {
-    config = pConfig;
+Directory::Directory() {
     files = new std::vector<FileEntry *>;
-    force = true;
 }
 
 Directory::~Directory() {
-    files->clear();
+    for (auto const *e: *files) {
+        delete e;
+    }
     delete files;
 }
 
-void Directory::setPath(std::string path) {
-    this->path = path;
-    force = true;
-}
-
-std::vector<FileEntry *> *Directory::getDirectory() throw(std::string) {
-    if (!force)
-        return files;
-
+std::vector<FileEntry *> *Directory::getDirectory(std::string path, bool showDot) throw(std::string) {
     files->clear();
 
     DIR *dir = opendir(const_cast<char *>(path.c_str()));
     if (dir == NULL)
-        throw std::invalid_argument("can't open directory");
+        throw std::runtime_error("can't open directory");
 
     struct dirent *dirent;
     while ((dirent = readdir(dir)) != NULL) {
-        if (strcmp(dirent->d_name, ".") != 0 /*&& strcmp(dirent->d_name, "..") != 0*/) {
-            if (!((dirent->d_name[0] == '.') && !config->isShowDot())) {
+        if (strcmp(dirent->d_name, ".") != 0) {
+            if (!((dirent->d_name[0] == '.') && !showDot)) {
                 struct stat sb;
                 bzero(&sb, sizeof(sb));
                 lstat((path + "/" + dirent->d_name).c_str(), &sb);
@@ -83,7 +75,6 @@ std::vector<FileEntry *> *Directory::getDirectory() throw(std::string) {
     }
 
     closedir(dir);
-    force = false;
 
     return files;
 }

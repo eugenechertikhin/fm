@@ -7,16 +7,15 @@
 #include "Workspace.h"
 
 int main(int argc, char **argv) {
-    bool forceBlack = false;
-    bool forceColor = false;
-    int row, col;
+    bool forceColor = true;
+    int rows, cols;
 
     int opt;
     while ((opt = getopt(argc, argv, "hbcv")) != -1) {
         switch (opt) {
             case 'b':
                 // notRead black interface
-                forceBlack = true;
+                forceColor = false;
                 break;
             case 'c':
                 // notRead colour interface
@@ -53,10 +52,7 @@ int main(int argc, char **argv) {
     char cwd[PATH_MAX];
     config->setCurrentPath(getcwd(cwd, PATH_MAX));
 
-    if(forceColor)
-        config->forceColor();
-    else if(forceBlack)
-        config->forceBlack();
+    config->setColor(forceColor);
 
     // init screen and show workspace
     initscr();
@@ -70,12 +66,11 @@ int main(int argc, char **argv) {
     refresh();
 
     // get screen size
-    getmaxyx(stdscr, row, col);
-    config->setSize(row, col);
+    getmaxyx(stdscr, rows, cols);
 
     // switch to workspace
     Workspace *w = new Workspace(config);
-    w->show();
+    w->show(rows, cols);
 
     delete w;
     delete config;
