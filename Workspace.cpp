@@ -6,6 +6,7 @@
 #include <vector>
 #include "Workspace.h"
 #include "Window.h"
+#include "Colors.h"
 
 Workspace::Workspace(Config *pConfig) {
     config = pConfig;
@@ -23,7 +24,6 @@ void Workspace::show(int rows, int cols) {
     left->setSort(config->getLeftSort(), config->getLeftSortOrder());
     left->setType(config->getLeftType());
     left->setShowDot(config->isShowDot());
-
     left->draw(0, 0, rows - 1, cols / 2, config->isColour());
 
     FilePanel *right = new FilePanel();
@@ -32,7 +32,6 @@ void Workspace::show(int rows, int cols) {
     right->setSort(config->getRightSort(), config->getRightSortOrder());
     right->setType(config->getRightType());
     right->setShowDot(config->isShowDot());
-
     right->draw(0, cols / 2, rows - 1, cols / 2, config->isColour());
 
     left->setNext(right);
@@ -40,9 +39,6 @@ void Workspace::show(int rows, int cols) {
 
     current = left;
     current->showCursor();
-
-    // is it required?
-    doupdate();
 
     // read keypressed
     while (!ex) {
@@ -77,13 +73,13 @@ void Workspace::show(int rows, int cols) {
                 if (config->isConfirmExit()) {
                     // todo move it to another class
                     Window *w = new Window();
-                    w->draw(rows/2 - 3, cols/2 - 14, 5, 28, 4);
-                    mvprintw(rows/2-2, cols/2-9, "Exit. Are you sure ?");
-                    mvprintw(rows/2, cols/2-7, "Yes");
-                    mvprintw(rows/2, cols/2+7, "No");
+
+                    w->draw(rows/2 - 3, cols/2 - 14, 5, 28, BLACK_ON_GREY);
+
                     int c = mvgetch(rows/2, cols/2-5);
                     if (c == 'y' || c == 'Y')
                         ex = true;
+
                     delete w;
                     left->redraw();
                     right->redraw();
@@ -170,9 +166,12 @@ void Workspace::show(int rows, int cols) {
 
                 endwin();
                 // todo? append "cd `d->path`;" to begin of cmd
+
                 system(const_cast<char *>(cmd.c_str()));
-                std::cout << "Press enter to continue...";
-                getch();
+                if (config->isConfirmExecute()) {
+                    std::cout << "Press enter to continue...";
+                    getch();
+                }
                 refresh();
 
                 // todo: save command to history
@@ -188,4 +187,6 @@ void Workspace::show(int rows, int cols) {
 
         doupdate();
     }
+    delete left;
+    delete right;
 }

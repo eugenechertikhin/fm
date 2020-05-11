@@ -17,7 +17,7 @@ enum PanelType {
 };
 
 enum ListMode  {
-    Full,
+    Full, // this is 'custom' with name,size,perm
     Brief,
     Custom
 };
@@ -101,8 +101,6 @@ class Config {
     bool isUseSi();
     void setUseSi(bool f);
 
-//    confirmExit, confirmDelete, confirmOverride, confirmExecute;
-
     bool isInternalEdit();
     void setInternalEdit();
     void setEditor(const std::string &filename);
@@ -115,6 +113,9 @@ class Config {
 
     bool isConfirmExit();
     void setConfirmExit(bool confirm);
+    bool isConfirmExecute();
+    void setConfirmExecute(bool confirm);
+//    confirmDelete, confirmOverride;
 
 private:
     std::string defaultPath;

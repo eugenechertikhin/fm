@@ -21,13 +21,14 @@ void Config::loadConfig() {
     showDot = true;
 
     leftType = FileList;
-    leftMode = Full;
+    leftMode = Brief;
+    leftModeParams = "Name Size";
     leftSort = Name;
     leftSortOrder = false;
 
     rightType = FileList;
-    rightMode = Brief; // Custom;
-    rightModeParams = "name size modify access create perm";
+    rightMode = Custom;
+    rightModeParams = "Name Size Modify Access Create Perm";
     rightSort = Name;
     rightSortOrder = false;
 
@@ -36,7 +37,7 @@ void Config::loadConfig() {
     confirmOverride = true;
     confirmExecute = true;
 
-    // load config from inni
+    // load config from ini
     // todo
 }
 
@@ -231,4 +232,10 @@ bool Config::isConfirmExit() {
 }
 void Config::setConfirmExit(bool confirm) {
     confirmExit = confirm;
+}
+bool Config::isConfirmExecute() {
+    return confirmExecute;
+}
+void Config::setConfirmExecute(bool confirm) {
+    confirmExecute = confirm;
 }

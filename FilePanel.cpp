@@ -3,12 +3,13 @@
 //
 
 #include <algorithm>
-
+#include <iostream>
 #include "FilePanel.h"
 #include "Colors.h"
 
 FilePanel::FilePanel() {
     Colors::initColors();
+    modeParams = new std::vector<std::string>;
 
     showDot = true;
     showBorder = true;
@@ -40,7 +41,8 @@ void FilePanel::setType(PanelType type) {
 }
 void FilePanel::setMode(ListMode mode, std::string params) {
     this->mode = mode;
-    this->modeParams = params;
+    this->modeParams->clear();
+    util::Utils::split(modeParams, params, ' ');
 }
 void FilePanel::setSort(SortType sortType, bool sortOrder) {
     this->sortType = sortType;
@@ -108,97 +110,86 @@ void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
     }
 }
 
-//void Workspace::fillWindow(WINDOW *win, PanelType type, ListMode mode, std::vector<std::string> *custom) {
-//    if (type == FileList) {
-//
-//        if (type == FileList) {
-//            // headers
-//            char n[] = "Name";
-//            char s[] = "Size";
-//            char m[] = "Modify";
-//            char a[] = "Access";
-//            char c[] = "Create";
-//            char p[] = "Perm";
-//
-//            wattron(win, COLOR_PAIR(1));
-//            if (mode == Brief) {
-//                for (int i = 0; i < config->getRows() - 1 - 3; i++)
-//                    mvwaddch(win, i + 1, config->getCols() / 4 - 1, ACS_VLINE);
-//
-//                // print column name
-//                wattron(win, COLOR_PAIR(2));
-//                int sizeOfPart = config->getCols() / 2 /*left or right*/ / 2 /*2part*/;
-//                for (int i = 1; i <= 2 /*part*/; i++)
-//                    mvwprintw(win, 1, (sizeOfPart*i) - (sizeOfPart / 2) /*center of part*/ - (strlen(n) / 2), n);
-//                wattroff(win, COLOR_PAIR(2));
-//
-//            } else if (mode == Custom) {
-//                int sizeOfPart = config->getCols() / 2 - (custom->size() * (SmallColumnSize+1)) -1;
-//                for (int i = 0; i < config->getRows() - 1 - 3; i++)
-//                    mvwaddch(win, i + 1, sizeOfPart - 1, ACS_VLINE);
-//
-//                for(int j = 1; j < custom->size(); j++) {
-//                    for (int i = 0; i < config->getRows() - 1 - 3; i++)
-//                        mvwaddch(win, i + 1, sizeOfPart + (SmallColumnSize+1*j), ACS_VLINE);
-//                }
-//
-//                wattron(win, COLOR_PAIR(2));
-//                int i = 0;
-//                for(auto const str: *custom) {
-//                    if (i == 0) {
-//                        mvwprintw(win, 1, sizeOfPart / 2 - (strlen(n) / 2), str.c_str());
-//                        i++;
-//                    } else {
-//                        mvwprintw(win, 1, sizeOfPart + 1 + (SmallColumnSize+1*i) + ((SmallColumnSize - str.size())/2), str.c_str());
-//                    }
-//                }
-//                wattroff(win, COLOR_PAIR(2));
-//
-//            } else if (mode == Full) {
-//                int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
-//                for (int i = 0; i < config->getRows() - 1 - 3; i++)
-//                    mvwaddch(win, i + 1, sizeOfPart, ACS_VLINE);
-//
-//                for (int i = 0; i < config->getRows() - 1 - 3; i++)
-//                    mvwaddch(win, i + 1, sizeOfPart + (SmallColumnSize + 1), ACS_VLINE);
-//
-//                wattron(win, COLOR_PAIR(2));
-//                mvwprintw(win, 1, sizeOfPart / 2 - (strlen(n)/2), n);
-//                mvwprintw(win, 1, sizeOfPart + 1 + ((SmallColumnSize - strlen(s))/2), s);
-//                mvwprintw(win, 1, sizeOfPart + 1 + (SmallColumnSize+1) + ((SmallColumnSize - strlen(p))/2), p);
-//
-//                wattroff(win, COLOR_PAIR(2));
-//            }
-//        }
-//        mvwaddch(win, config->getRows() - 1 - 3, 0, ACS_LTEE);
-//        mvwhline(win, config->getRows() - 1 - 3, 1, ACS_HLINE, config->getCols() / 2 - 2);
-//        mvwaddch(win, config->getRows() - 1 - 3, config->getCols() / 2 - 1, ACS_RTEE);
-//
-//        wattroff(win, COLOR_PAIR(1));
-//    } else if (type == Tree) {
-//        // todo
-//    } else if (type == Info) {
-//        // todo
-//    } else if (type == QuickView) {
-//        // todo
-//    }
-//}
-//
-//
-//int Workspace::printFiles(WINDOW *win, Directory *dir, SortType sortOrder, ListMode listMode, int cursorLengh, int offset) {
-//    std::vector<FileEntry *> *files = dir->getDirectory();
-//
-//    // files count in the directory
-//    mvwprintw(win, 0, config->getCols() / 2 - 7, " %d ", files->size());
-//
-//    int i = 0;
-//    for(auto const &entry: *files) {
-//        if (i < offset) {
-//            i++;
-//            continue;
-//        }
-//
-//        if (listMode == Full) {
+void FilePanel::redraw() {
+    redrawwin(win);
+    wrefresh(win);
+}
+
+#define STATUS_LINE 3
+#define EXTRA_COLUMN 10
+#define TOP_LINE 1
+#define COLUMN_NAME_LINE 1
+
+void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
+    // headers
+    char n[] = "Name";
+    char s[] = "Size";
+    char m[] = "Modify";
+    char a[] = "Access";
+    char c[] = "Create";
+    char p[] = "Perm";
+
+    win = newwin(rows, cols, y, x);
+    box(win, 0, 0);
+    if (colour)
+        wbkgd(win, COLOR_PAIR(1));
+
+    // print window inside lines and column names
+    if (type == FileList) {
+        if (colour)
+            wattron(win, COLOR_PAIR(WHITE_ON_BLUE));
+        mvwaddch(win, rows - STATUS_LINE, 0, ACS_LTEE);
+        mvwhline(win, rows - STATUS_LINE, 1, ACS_HLINE, cols - 2);
+        mvwaddch(win, rows - STATUS_LINE, cols - 1, ACS_RTEE);
+        if (colour)
+            wattroff(win, COLOR_PAIR(WHITE_ON_BLUE));
+
+        // print path at the header
+        wattron(win, COLOR_PAIR(1));
+        mvwprintw(win, 0, 2, " %s ", const_cast<char*>(path.c_str()));
+        wattroff(win, COLOR_PAIR(1));
+
+        // read directory
+        directory = new Directory();
+        files = directory->getDirectory(path, showDot);
+        sortDirectory(files);
+
+        // show total files count
+        mvwprintw(win, 0, cols - 7, " %d ", files->size());
+
+        // showTotalSpace / showFreeSpace
+        struct statvfs statfs;
+        statvfs(path.c_str(), &statfs);
+        mvwprintw(win, rows-1, 2, " %u / %u ", statfs.f_bavail*statfs.f_frsize, statfs.f_bfree*statfs.f_frsize);
+
+        // Override. Full is just variant of Custom
+        if (mode == Full) {
+            mode = Custom;
+            modeParams->clear();
+            modeParams->push_back(n);
+            modeParams->push_back(s);
+            modeParams->push_back(p);
+        }
+
+        if (mode == Custom) {
+            for (int i = 0; i < rows-1 - STATUS_LINE; i++) {
+                for (int j = 1; j < modeParams->size(); j++)
+                    mvwaddch(win, i + 1, cols - (EXTRA_COLUMN * j) - 1, ACS_VLINE);
+            }
+
+            wattron(win, COLOR_PAIR(YELLOW_ON_BLUE));
+            // print first column name
+            mvwprintw(win, 1, 2, modeParams->at(0).c_str());
+
+            // print extra custom column names
+            for (int j = 1; j < modeParams->size(); j++)
+                mvwprintw(win, 1, 1+cols - (EXTRA_COLUMN * (modeParams->size()-j)), modeParams->at(j).c_str());
+            wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
+
+            // print files
+            for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
+                mvwprintw(win, 2+i, 2, "%s", files->at(i)->name.c_str());
+
 //            int sizeOfPart = config->getCols() / 2 - (SmallColumnSize+1) - (SmallColumnSize+1) -1;
 //
 //            util::Utils::paddingRight(&entry->name, cursorLengh-1);
@@ -207,74 +198,52 @@ void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
 //            util::Utils::paddingLeft(&size, SmallColumnSize);
 //            mvwprintw(win, 2 + i - offset, sizeOfPart+1, size.c_str());
 //            mvwprintw(win, 2 + i - offset, sizeOfPart + SmallColumnSize+2, "%s", entry->perm.c_str());
-//        } else if (listMode == Brief) {
+            }
+
+        } else if (mode == Brief) {
+            for (int i = 0; i < rows-1 - STATUS_LINE; i++)
+                mvwaddch(win, i + 1, cols/2 - 1, ACS_VLINE);
+
+            // print column name
+            wattron(win, COLOR_PAIR(YELLOW_ON_BLUE));
+            mvwprintw(win, 1, 1 + 1, n);
+            mvwprintw(win, 1, cols/2 + 1, n);
+            wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
+
+            // print files
+            for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
 //            util::Utils::paddingRight(&entry->name, cursorLengh-1);
-//            mvwprintw(win, 2 + i - offset, 1, "%s", entry->name.c_str());
-//        } else if (listMode == Custom) {
-//            // todo
-//        }
-//        i++;
-//        if ((i - offset) == config->getRowsInPanel())
-//            return i - offset;
-//    }
-//
-//    return i - offset;
-//}
-
-void FilePanel::redraw() {
-    redrawwin(win);
-    wrefresh(win);
-}
-
-void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
-    win = newwin(rows, cols, y, x);
-    box(win, 0, 0);
-    if (colour)
-        wbkgd(win, COLOR_PAIR(1));
-
-    //    fillWindow(rightWindow, config->getRightType(), config->getRightMode(), rightCustomMode);
-
-    directory = new Directory();
-    files = directory->getDirectory(path, showDot);
-    sortDirectory(files);
-
-//    printFiles(rightWindow, rpd.dir, config->getRightSort(), config->getRightMode(), cursorLengh, 0);
-
-    // show total files count
-//    lpd.totalFiles = lpd.dir->getDirectory()->size();
-
-    // showTotalSpace / showFreeSpace
-
-    // print path at the header
-    wattron(win, COLOR_PAIR(1));
-    mvwprintw(win, 0, 2, " %s ", const_cast<char*>(path.c_str()));
-    wattroff(win, COLOR_PAIR(1));
-
-//    if (config->getLeftPanelMode() == Full)
-//        cursorLengh = config->getCols() / 2 - SmallColumnSize-2 - SmallColumnSize-2;
-//    else if (config->getLeftPanelMode() == Brief)
-//        cursorLengh = config->getCols() / 4 - 2;
-//    else {
-//        leftCustomMode->clear();
-//        util::Utils::split(leftCustomMode, config->getLeftModeParams(), ' ');
-//        cursorLengh = (leftCustomMode->size() - 1) * SmallColumnSize - 1 /**/;
-//    }
-
-    //    getRowsInPanel rows - 2 /* top size */ - 1 /* cmd line */ - 3 /* file info line */;
-
-    // print cursor
-//    mvwchgat(win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
+                mvwprintw(win, 2 + i, 2, "%s", files->at(i)->name.c_str());
+            }
+        }
+    } else if (type == Tree) {
+        // todo
+    } else if (type == Info) {
+        // todo
+    } else if (type == QuickView) {
+        // todo
+    }
 
     wrefresh(win);
 }
 
 void FilePanel::hideCursor() {
-    mvwchgat(win, 0, 2, path.size()+2, A_COLOR, 1, NULL);
+    if (type == FileList || type == QuickView)
+        mvwchgat(win, 0, 2, path.size()+2, A_COLOR, 1, NULL);
+
     // todo print cursor
+
+    //    mvwchgat(win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
+
     wrefresh(win);
 }
 void FilePanel::showCursor() {
-    mvwchgat(win, 0, 2, path.size()+2, A_COLOR, 3, NULL);
+    if (type == FileList || type == QuickView)
+        mvwchgat(win, 0, 2, path.size()+2, A_COLOR, 3, NULL);
+
     // todo print cursor
+
+    //    mvwchgat(win, 2 + d->position, 1, d->cursorLengh, A_COLOR, 3, NULL);
+
     wrefresh(win);
 }

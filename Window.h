@@ -12,7 +12,8 @@ public:
     Window();
     ~Window();
 
-    void draw(int y, int x, int rows, int cols, bool colour);
+    void draw(int y, int x, int rows, int cols, int colour);
+    WINDOW *get();
 
 private:
     WINDOW *win;

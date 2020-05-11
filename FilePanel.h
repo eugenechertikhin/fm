@@ -7,12 +7,11 @@
 #include <string>
 #include <vector>
 #include <ncurses.h>
+#include <sys/statvfs.h>
 
 #include "Utils.h"
 #include "Config.h"
 #include "Directory.h"
-
-#define SmallColumnSize 10
 
 class FilePanel {
 
@@ -47,7 +46,7 @@ private:
     std::string path;
     PanelType type;
     ListMode mode;
-    std::string modeParams;
+    std::vector<std::string> *modeParams;
     SortType sortType;
     bool sortOrder; // true == asc
     bool showDot, showBorder, showStatus, showFree, showTotal, useSi;
