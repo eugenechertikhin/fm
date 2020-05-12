@@ -148,7 +148,8 @@ void Workspace::show(int rows, int cols) {
                     std::cout << "Press enter to continue...";
                     getch();
                 }
-                refresh();
+                current->rescanDirectory();
+                current->showCursor(false);
 
                 // todo: save command to history
 

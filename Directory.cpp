@@ -20,6 +20,13 @@ Directory::~Directory() {
     delete files;
 }
 
+void Directory::clear() {
+    for (auto const *e: *files) {
+        delete e;
+    }
+    files->clear();
+}
+
 std::vector<FileEntry *> *Directory::getDirectory(std::string path, bool showDot) throw(std::string) {
     files->clear();
 

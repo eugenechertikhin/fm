@@ -35,6 +35,7 @@ class Directory {
     Directory();
     ~Directory();
 
+    void clear();
     std::vector<FileEntry *> *getDirectory(std::string path, bool showDot) throw (std::string);
 
   private:

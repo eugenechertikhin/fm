@@ -52,8 +52,6 @@ int main(int argc, char **argv) {
     char cwd[PATH_MAX];
     config->setCurrentPath(getcwd(cwd, PATH_MAX));
 
-    config->setColor(forceColor);
-
     // init screen and show workspace
     initscr();
     raw();

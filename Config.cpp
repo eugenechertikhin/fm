@@ -24,13 +24,13 @@ void Config::loadConfig() {
     leftMode = Brief;
     leftModeParams = "Name Size";
     leftSort = Name;
-    leftSortOrder = false;
+    leftSortOrder = true;
 
     rightType = FileList;
     rightMode = Custom;
-    rightModeParams = "Name Size Modify Access Create Perm";
+    rightModeParams = "Name Size Perm";
     rightSort = Name;
-    rightSortOrder = false;
+    rightSortOrder = true;
 
     confirmExit = true;
     confirmDelete = true;

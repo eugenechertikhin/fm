@@ -35,6 +35,10 @@ public:
     void hideCursor(bool p);
     void showCursor(bool p);
 
+    void updateStatusLine();
+    void updateFiles();
+    void rescanDirectory();
+
     void moveUp();
     void moveDown();
     void moveLeft();
