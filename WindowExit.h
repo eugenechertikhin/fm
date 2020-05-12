@@ -7,13 +7,12 @@
 #include <string>
 #include <ncurses.h>
 
-class Window {
+class WindowExit {
 public:
-    Window();
-    ~Window();
+    WindowExit();
+    ~WindowExit();
 
-    void draw(int y, int x, int rows, int cols, int colour);
-    WINDOW *get();
+    bool draw(int y, int x, int rows, int cols, int colour);
 
 private:
     WINDOW *win;

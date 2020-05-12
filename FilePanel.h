@@ -45,6 +45,8 @@ public:
     void moveRight();
     void enter();
 
+    FileEntry *getCurrentFile();
+
 private:
     void sortDirectory(std::vector<FileEntry *> *files);
 

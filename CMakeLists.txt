@@ -7,14 +7,12 @@ add_subdirectory(Simpleini)
 
 add_executable(fm
         Config.cpp
-        Config.h
         Directory.cpp
-        Directory.h
         main.cpp
         Operations.cpp
-        Operations.h
-        version.h
         Workspace.cpp
-        Workspace.h Utils.h FilePanel.cpp FilePanel.h Window.cpp Window.h Colors.h)
+        FilePanel.cpp
+        WindowExit.cpp
+        WindowView.cpp)
 
 target_link_libraries(fm panel ncurses)

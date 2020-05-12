@@ -5,8 +5,11 @@
 #include <iostream>
 #include <vector>
 #include "Workspace.h"
-#include "Window.h"
+#include "WindowView.h"
+#include "WindowExit.h"
 #include "Colors.h"
+#include "Directory.h"
+#include "KeyBar.h"
 
 Workspace::Workspace(Config *pConfig) {
     config = pConfig;
@@ -56,6 +59,14 @@ void Workspace::show(int rows, int cols) {
             case KEY_F(2):
                 break;
             case KEY_F(3):
+                if (true) {
+                    FileEntry *f = current->getCurrentFile();
+                    WindowView *w = new WindowView();
+                    w->draw(0, 0, rows-1, cols, WHITE_ON_BLUE, f->name);
+                    delete w;
+                    left->redraw();
+                    right->redraw();
+                }
                 break;
             case KEY_F(4):
                 break;
@@ -72,14 +83,8 @@ void Workspace::show(int rows, int cols) {
             case KEY_F(10): {
                 if (config->isConfirmExit()) {
                     // todo move it to another class
-                    Window *w = new Window();
-
-                    w->draw(rows/2 - 3, cols/2 - 14, 5, 28, BLACK_ON_GREY);
-
-                    int c = mvgetch(rows/2, cols/2-5);
-                    if (c == 'y' || c == 'Y')
-                        ex = true;
-
+                    WindowExit *w = new WindowExit();
+                    ex = w->draw(5, 28, rows/2 - 3, cols/2 - 14, BLACK_ON_GREY);
                     delete w;
                     left->redraw();
                     right->redraw();

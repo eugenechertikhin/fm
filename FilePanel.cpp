@@ -251,6 +251,10 @@ void FilePanel::showCursor(bool p) {
     wrefresh(win);
 }
 
+FileEntry *FilePanel::getCurrentFile() {
+    return files->at(pos+offset);
+}
+
 void FilePanel::updateStatusLine() {
     mvwprintw(win, 0, 50, "%d / %d (%d)", pos, offset, filesCount);
 
@@ -267,6 +271,7 @@ void FilePanel::updateFiles() {
             if (i+offset < filesCount) {
                 std::string _name = files->at(i + offset)->name;
                 util::Utils::paddingRight(&_name, cursorLengh - 1);
+                // todo if e.type == directory
                 mvwprintw(win, 2 + i, 2, "%s", _name.c_str());
 
                 std::string _size = std::to_string(files->at(i + offset)->size);
@@ -353,11 +358,38 @@ void FilePanel::moveDown() {
 }
 
 void FilePanel::moveLeft() {
+    hideCursor(false);
+    pos-=rowsCount;
+    if (mode == Custom) {
+        while (pos < 0) {
+            pos++;
+            if (offset > 0)
+                offset--;
+        }
+    }
+    while (pos+offset < 0)
+        pos++;
+
+    updateFiles();
     updateStatusLine();
+    showCursor(false);
 }
 
 void FilePanel::moveRight() {
+    hideCursor(false);
+    pos+=rowsCount;
+    while (pos+offset > filesCount-1)
+        pos--;
+
+    if (mode == Custom) {
+        while (pos > rowsCount-1) {
+            pos--;
+            offset++;
+        }
+    }
+    updateFiles();
     updateStatusLine();
+    showCursor(false);
 }
 
 void FilePanel::enter() {
