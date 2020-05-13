@@ -30,7 +30,8 @@ public:
     void setShowDot(bool showDot);
 
     void draw(int y, int x, int rows, int cols, bool colour);
-    void redraw();
+    void printInside();
+    void update();
 
     void hideCursor(bool p);
     void showCursor(bool p);
@@ -60,8 +61,9 @@ private:
 
     int cols;
     int rows;
+    bool colour;
 
-    Directory *directory;
+    Directory *dir;
     std::vector<FileEntry *> *files;
     int pos;
     int offset;

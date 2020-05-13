@@ -58,14 +58,17 @@ void Workspace::show(int rows, int cols) {
                 break;
             case KEY_F(2):
                 break;
-            case KEY_F(3):
-                if (true) {
+            case KEY_F(3): {
                     FileEntry *f = current->getCurrentFile();
-                    WindowView *w = new WindowView();
-                    w->draw(0, 0, rows-1, cols, WHITE_ON_BLUE, f->name);
-                    delete w;
-                    left->redraw();
-                    right->redraw();
+                    if (f->type == regular || f->type == softlink) {
+                        WindowView *w = new WindowView();
+                        w->draw(0, 0, rows - 1, cols, WHITE_ON_BLUE, f->name);
+                        delete w;
+                        left->update();
+                        right->update();
+                    } else if (f->type == directory) {
+                        current->enter();
+                    }
                 }
                 break;
             case KEY_F(4):
@@ -81,19 +84,18 @@ void Workspace::show(int rows, int cols) {
             case KEY_F(9):
                 break;
             case KEY_F(10): {
-                if (config->isConfirmExit()) {
-                    // todo move it to another class
-                    WindowExit *w = new WindowExit();
-                    ex = w->draw(5, 28, rows/2 - 3, cols/2 - 14, BLACK_ON_GREY);
-                    delete w;
-                    left->redraw();
-                    right->redraw();
-                } else {
-                    ex = true;
+                    if (config->isConfirmExit()) {
+                        // todo move it to another class
+                        WindowExit *w = new WindowExit();
+                        ex = w->draw(5, 28, rows/2 - 3, cols/2 - 14, BLACK_ON_GREY);
+                        delete w;
+                        left->update();
+                        right->update();
+                    } else {
+                        ex = true;
+                    }
                 }
                 break;
-            }
-
             // moving keys
             case 9: // TAB
                 current->hideCursor(true);
@@ -135,32 +137,34 @@ void Workspace::show(int rows, int cols) {
 
             // find ^/
 
-            // keys for command line
-            case 127: // backspace
+            // backspace
+            case 127:
                 cmd.pop_back();
                 break;
-            case 10: // enter key
-                if (cmd.size() < 1) {
-                    current->enter();
-                    break;
+            // enter key
+            case 10: {
+                    if (cmd.size() < 1) {
+                        current->enter();
+                        break;
+                    }
+
+                    endwin();
+
+                    std::string s = "cd " + current->getPath() + "; " + cmd;
+                    system(const_cast<char *>(s.c_str()));
+
+                    if (config->isConfirmExecute()) {
+                        std::cout << "Press enter to continue...";
+                        getch();
+                    }
+                    current->rescanDirectory();
+                    current->showCursor(true);
+
+                    // todo: save command to history
+
+                    // clear command line
+                    cmd = "";
                 }
-
-                endwin();
-                // todo? append "cd `d->path`;" to begin of cmd
-
-                system(const_cast<char *>(cmd.c_str()));
-                if (config->isConfirmExecute()) {
-                    std::cout << "Press enter to continue...";
-                    getch();
-                }
-                current->rescanDirectory();
-                current->showCursor(false);
-
-                // todo: save command to history
-
-                // clear command line
-                cmd = "";
-
                 break;
             default:
                 cmd.push_back(c);

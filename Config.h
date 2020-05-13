@@ -113,14 +113,17 @@ class Config {
 
     bool isConfirmExit();
     void setConfirmExit(bool confirm);
+
     bool isConfirmExecute();
     void setConfirmExecute(bool confirm);
-//    confirmDelete, confirmOverride;
+    bool isConfirmDelete();
+    void setConfirmDelete(bool confirm);
+    bool isConfirmOverride();
+    void setConfirmOverride(bool confirm);
 
 private:
     std::string defaultPath;
     bool color, root;
-//    int rows, cols;
 
     std::string leftPath;
     PanelType leftType;

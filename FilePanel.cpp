@@ -32,7 +32,8 @@ FilePanel::FilePanel() {
 }
 
 FilePanel::~FilePanel() {
-    delete directory;
+    delwin(win);
+    delete dir;
 }
 
 void FilePanel::setNext(FilePanel *fp) {
@@ -64,6 +65,7 @@ void FilePanel::setShowDot(bool showDot) {
     this->showDot = showDot;
 }
 
+// desc order doesn't work
 void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
     if (sortType != Unsorted) {
         if (sortType == Name) {
@@ -122,24 +124,35 @@ void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
     }
 }
 
-void FilePanel::redraw() {
-    redrawwin(win);
-    wrefresh(win);
-}
-
 void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
     this->cols = cols;
     this->rows = rows;
+    this->colour = colour;
 
     pos = 0;
     offset = 0;
 
     win = newwin(rows, cols, y, x);
-    box(win, 0, 0);
     if (colour)
-        wbkgd(win, COLOR_PAIR(1));
+        wbkgd(win, COLOR_PAIR(WHITE_ON_BLUE));
 
-    // print window inside lines and column names
+    printInside();
+
+    if (type == FileList) {
+        // read dir
+        dir = new Directory();
+        rescanDirectory();
+    }
+
+    updateStatusLine();
+
+    wrefresh(win);
+}
+
+// print window inside lines and column names
+void FilePanel::printInside() {
+    box(win, 0, 0);
+
     if (type == FileList) {
         if (colour)
             wattron(win, COLOR_PAIR(WHITE_ON_BLUE));
@@ -197,14 +210,6 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
             mvwprintw(win, 1, cols/2 + 1, HEADER_NAME);
             wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
         }
-
-        // read directory
-        directory = new Directory();
-        rescanDirectory();
-
-//        updateFiles();
-        updateStatusLine();
-
     } else if (type == Tree) {
         // todo
     } else if (type == Info) {
@@ -212,7 +217,9 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
     } else if (type == QuickView) {
         // todo
     }
-
+}
+void FilePanel::update() {
+    redrawwin(win);
     wrefresh(win);
 }
 
@@ -256,7 +263,8 @@ FileEntry *FilePanel::getCurrentFile() {
 }
 
 void FilePanel::updateStatusLine() {
-    mvwprintw(win, 0, 50, "%d / %d (%d)", pos, offset, filesCount);
+    // todo debug
+    //mvwprintw(win, 0, 50, "%d / %d (%d)", pos, offset, filesCount);
 
     std::string _name = files->at(pos + offset)->name;
     util::Utils::paddingRight(&_name, cols-22);
@@ -271,7 +279,7 @@ void FilePanel::updateFiles() {
             if (i+offset < filesCount) {
                 std::string _name = files->at(i + offset)->name;
                 util::Utils::paddingRight(&_name, cursorLengh - 1);
-                // todo if e.type == directory
+                // todo if e.type == dir
                 mvwprintw(win, 2 + i, 2, "%s", _name.c_str());
 
                 std::string _size = std::to_string(files->at(i + offset)->size);
@@ -305,9 +313,9 @@ void FilePanel::updateFiles() {
 }
 
 void FilePanel::rescanDirectory() {
-    directory->clear();
+    dir->clear();
 
-    files = directory->getDirectory(path, showDot);
+    files = dir->getDirectory(path, showDot);
     sortDirectory(files);
     filesCount = files->size();
 
@@ -320,7 +328,6 @@ void FilePanel::rescanDirectory() {
     mvwprintw(win, rows-1, 2, " %u / %u ", statfs.f_bavail*statfs.f_frsize, statfs.f_bfree*statfs.f_frsize);
 
     updateFiles();
-    wrefresh(win);
 }
 
 void FilePanel::moveUp() {
@@ -360,13 +367,13 @@ void FilePanel::moveDown() {
 void FilePanel::moveLeft() {
     hideCursor(false);
     pos-=rowsCount;
-    if (mode == Custom) {
-        while (pos < 0) {
-            pos++;
-            if (offset > 0)
-                offset--;
-        }
+
+    while (pos < 0) {
+        pos++;
+        if (offset > 0)
+            offset--;
     }
+
     while (pos+offset < 0)
         pos++;
 
@@ -381,17 +388,42 @@ void FilePanel::moveRight() {
     while (pos+offset > filesCount-1)
         pos--;
 
-    if (mode == Custom) {
-        while (pos > rowsCount-1) {
-            pos--;
-            offset++;
-        }
+    int c = 0;
+    if (mode == Custom)
+        c = rowsCount-1;
+    else if (mode == Brief)
+        c = rowsCount*2-1;
+
+    while (pos > c) {
+        pos--;
+        offset++;
     }
+
     updateFiles();
     updateStatusLine();
     showCursor(false);
 }
 
 void FilePanel::enter() {
+    FileEntry *f = getCurrentFile();
+    if (f->type == directory) {
+        if (f->name == "..")
+            path = util::Utils::parentPath(path);
+        else
+            (path == "/") ? path.append(f->name) : path.append("/" + f->name);
 
+        wclear(win);
+        printInside();
+
+        rescanDirectory();
+
+        // todo: set cursor to prev_dir
+        pos = 0;
+        offset = 0;
+
+        updateStatusLine();
+        showCursor(true);
+    } else if (false) {
+        // todo run file
+    }
 }

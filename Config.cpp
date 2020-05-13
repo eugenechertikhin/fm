@@ -239,3 +239,16 @@ bool Config::isConfirmExecute() {
 void Config::setConfirmExecute(bool confirm) {
     confirmExecute = confirm;
 }
+
+bool Config::isConfirmDelete() {
+    return confirmDelete;
+}
+void Config::setConfirmDelete(bool confirm) {
+    confirmDelete = confirm;
+}
+bool Config::isConfirmOverride() {
+    return confirmOverride;
+}
+void Config::setConfirmOverride(bool confirm) {
+    confirmOverride = confirm;
+}
