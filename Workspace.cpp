@@ -6,6 +6,7 @@
 #include <vector>
 #include "Workspace.h"
 #include "WindowView.h"
+#include "WindowEdit.h"
 #include "WindowExit.h"
 #include "Colors.h"
 #include "Directory.h"
@@ -60,10 +61,25 @@ void Workspace::show(int rows, int cols) {
                 break;
             case KEY_F(3): {
                     FileEntry *f = current->getCurrentFile();
-                    if (f->type == regular || f->type == softlink) {
-                        WindowView *w = new WindowView();
-                        w->draw(0, 0, rows - 1, cols, WHITE_ON_BLUE, f->name);
-                        delete w;
+                    if (f->type == regular) {
+                        std::string file = current->getPath() + "/" + f->name;
+                        if (config->isInternalView()) {
+                            WindowView *w = new WindowView();
+                            w->draw(0, 0, rows - 1, cols, WHITE_ON_BLUE, file);
+                            delete w;
+                        } else {
+                            endwin();
+
+                            std::string pager = config->getViewer() + " " + file;
+                            system(const_cast<char *>(pager.c_str()));
+
+                            if (config->isConfirmExecute()) {
+                                std::cout << "Press enter to continue...";
+                                getch();
+                            }
+                            current->rescanDirectory();
+                            current->showCursor(true);
+                        }
                         left->update();
                         right->update();
                     } else if (f->type == directory) {
@@ -71,7 +87,31 @@ void Workspace::show(int rows, int cols) {
                     }
                 }
                 break;
-            case KEY_F(4):
+            case KEY_F(4): {
+                    FileEntry *f = current->getCurrentFile();
+                    if (f->type == regular) {
+                        std::string file = current->getPath() + "/" + f->name;
+                        if (config->isInternalEdit()) {
+                            WindowEdit *w = new WindowEdit();
+                            w->draw(0, 0, rows - 1, cols, WHITE_ON_BLUE, file);
+                            delete w;
+                        } else {
+                            endwin();
+
+                            std::string edit = config->getEditor() + " " + file;
+                            system(const_cast<char *>(edit.c_str()));
+
+                            if (config->isConfirmExecute()) {
+                                std::cout << "Press enter to continue...";
+                                getch();
+                            }
+                            current->rescanDirectory();
+                            current->showCursor(true);
+                        }
+                        left->update();
+                        right->update();
+                    }
+                }
                 break;
             case KEY_F(5):
                 break;

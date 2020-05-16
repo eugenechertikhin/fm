@@ -5,6 +5,7 @@
 #pragma once
 
 #include <ncurses.h>
+#include "Directory.h"
 
 #define WHITE_ON_BLUE  1
 #define YELLOW_ON_BLUE 2
@@ -24,5 +25,15 @@ public:
         // colorText, colorBackground, colorDirectory, colorSelection, colorFile, colorExeFile, colorArchive, colorLink, colorSocket, colorBroken
         // colorMenuText, colorMenuBackground, colorMenuInput, colorMenuSelection, colorMenuHot
         // warningMenuText, warningMenuBackground, warningMenuSelection, warningMenuHot
+    }
+
+    static int getStyleForFileEntry(FileType f) {
+        int s = 0;
+
+        if (f == directory)
+            s = A_BOLD;
+        // todo coloring
+
+        return s;
     }
 };

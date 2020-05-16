@@ -1,5 +1,5 @@
 //
-// Created by Eugene Chertikhin on 13.05.2020.
+// Created by Eugene Chertikhin on 16.05.2020.
 //
 
 #pragma once
@@ -8,10 +8,10 @@
 #include <fstream>
 #include <ncurses.h>
 
-class WindowView {
+class WindowEdit {
 public:
-    WindowView();
-    ~WindowView();
+    WindowEdit();
+    ~WindowEdit();
 
     void draw(int y, int x, int rows, int cols, bool colour, std::string fileName) throw(std::string);
 

@@ -13,6 +13,7 @@ add_executable(fm
         Workspace.cpp
         FilePanel.cpp
         WindowExit.cpp
-        WindowView.cpp)
+        WindowView.cpp
+        WindowEdit.cpp)
 
 target_link_libraries(fm panel ncurses)

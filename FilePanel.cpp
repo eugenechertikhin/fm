@@ -229,14 +229,16 @@ void FilePanel::hideCursor(bool p) {
         if (p)
             mvwchgat(win, 0, 2, path.size() + 2, A_COLOR, WHITE_ON_BLUE, NULL);
 
+        int style = Colors::getStyleForFileEntry(files->at(pos+offset)->type);
         // print cursor
         if (mode == Brief) {
             if (pos < rowsCount)
-                mvwchgat(win, 2 + pos, 1, cursorLengh, A_COLOR, WHITE_ON_BLUE, NULL);
+                mvwchgat(win, 2 + pos, 1, cursorLengh, style, WHITE_ON_BLUE, NULL);
             else
-                mvwchgat(win, 2 + pos-rowsCount, cols/2+1, cursorLengh, A_COLOR, WHITE_ON_BLUE, NULL);
-        } else
-            mvwchgat(win, 2 + pos, 1, cursorLengh, A_COLOR, WHITE_ON_BLUE, NULL);
+                mvwchgat(win, 2 + pos-rowsCount, cols/2+1, cursorLengh, style, WHITE_ON_BLUE, NULL);
+        } else {
+            mvwchgat(win, 2 + pos, 1, cursorLengh, style, WHITE_ON_BLUE, NULL);
+        }
     }
     wrefresh(win);
 }
@@ -247,13 +249,15 @@ void FilePanel::showCursor(bool p) {
             mvwchgat(win, 0, 2, path.size() + 2, A_COLOR, BLACK_ON_CYAN, NULL);
 
         // print cursor
+        int style = Colors::getStyleForFileEntry(files->at(pos+offset)->type);
         if (mode == Brief) {
             if (pos < rowsCount)
-                mvwchgat(win, 2 + pos, 1, cursorLengh, A_COLOR, BLACK_ON_CYAN, NULL);
+                mvwchgat(win, 2 + pos, 1, cursorLengh, style, BLACK_ON_CYAN, NULL);
             else
-                mvwchgat(win, 2 + pos-rowsCount, cols/2+1, cursorLengh, A_COLOR, BLACK_ON_CYAN, NULL);
-        } else
-            mvwchgat(win, 2 + pos, 1, cursorLengh, A_COLOR, BLACK_ON_CYAN, NULL);
+                mvwchgat(win, 2 + pos-rowsCount, cols/2+1, cursorLengh, style, BLACK_ON_CYAN, NULL);
+        } else {
+            mvwchgat(win, 2 + pos, 1, cursorLengh, style, BLACK_ON_CYAN, NULL);
+        }
     }
     wrefresh(win);
 }
@@ -279,7 +283,9 @@ void FilePanel::updateFiles() {
             if (i+offset < filesCount) {
                 std::string _name = files->at(i + offset)->name;
                 util::Utils::paddingRight(&_name, cursorLengh - 1);
-                // todo if e.type == dir
+                int style = Colors::getStyleForFileEntry(files->at(i+offset)->type);
+
+                wattron(win, style);
                 mvwprintw(win, 2 + i, 2, "%s", _name.c_str());
 
                 std::string _size = std::to_string(files->at(i + offset)->size);
@@ -287,6 +293,7 @@ void FilePanel::updateFiles() {
                 mvwprintw(win, 2 + i, 2 + cursorLengh, _size.c_str());
 
                 mvwprintw(win, 2 + i, 2 + cursorLengh + EXTRA_COLUMN, "%s", files->at(i + offset)->perm.c_str());
+                wattroff(win, style);
             }
         }
     } else if (mode == Brief) {
@@ -295,7 +302,11 @@ void FilePanel::updateFiles() {
             if (i+offset < filesCount) {
                 std::string _name = files->at(i + offset)->name;
                 util::Utils::paddingRight(&_name, cursorLengh - 1);
+                int style = Colors::getStyleForFileEntry(files->at(i+offset)->type);
+
+                wattron(win, style);
                 mvwprintw(win, 2 + i, 2, "%s", _name.c_str());
+                wattroff(win, style);
                 j++;
             }
         }
@@ -305,7 +316,11 @@ void FilePanel::updateFiles() {
                 if (i+j+offset < filesCount) {
                     std::string _name = files->at(i+j+offset)->name;
                     util::Utils::paddingRight(&_name, cursorLengh - 1);
+                    int style = Colors::getStyleForFileEntry(files->at(i+offset)->type);
+
+                    wattron(win, style);
                     mvwprintw(win, 2 + i, cols/2 + 1, "%s", _name.c_str());
+                    wattroff(win, style);
                 }
             }
         }

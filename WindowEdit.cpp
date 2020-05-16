@@ -1,19 +1,19 @@
 //
-// Created by Eugene Chertikhin on 13.05.2020.
+// Created by Eugene Chertikhin on 16.05.2020.
 //
 
-#include "WindowView.h"
+#include "WindowEdit.h"
 #include "Colors.h"
 #include "KeyBar.h"
 
-WindowView::WindowView() {
+WindowEdit::WindowEdit() {
     Colors::initColors();
 }
 
-WindowView::~WindowView() {
+WindowEdit::~WindowEdit() {
 }
 
-void WindowView::draw(int y, int x, int rows, int cols, bool colour, std::string fileName) throw(std::string) {
+void WindowEdit::draw(int y, int x, int rows, int cols, bool colour, std::string fileName) throw(std::string) {
     // open and read file
     std::ifstream file;
     file.open(fileName.c_str());

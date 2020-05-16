@@ -37,6 +37,11 @@ void Config::loadConfig() {
     confirmOverride = true;
     confirmExecute = true;
 
+    internalView = true;
+    internalEdit = false;
+    editorCmd = "vi";
+    viewerCmd = "less";
+
     // load config from ini
     // todo
 }

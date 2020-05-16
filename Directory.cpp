@@ -31,9 +31,8 @@ std::vector<FileEntry *> *Directory::getDirectory(std::string path, bool showDot
     files->clear();
 
     DIR *dir = opendir(const_cast<char *>(path.c_str()));
-    std::string s = "can't open dir " + path + "!";
     if (dir == NULL)
-        throw std::runtime_error(s);
+        throw std::runtime_error("can't open directory");
 
     struct dirent *dirent;
     while ((dirent = readdir(dir)) != NULL) {
