@@ -3,7 +3,6 @@
 //
 
 #include <algorithm>
-#include <iostream>
 #include "FilePanel.h"
 #include "Colors.h"
 
@@ -316,7 +315,7 @@ void FilePanel::updateFiles() {
                 if (i+j+offset < filesCount) {
                     std::string _name = files->at(i+j+offset)->name;
                     util::Utils::paddingRight(&_name, cursorLengh - 1);
-                    int style = Colors::getStyleForFileEntry(files->at(i+offset)->type);
+                    int style = Colors::getStyleForFileEntry(files->at(i+j+offset)->type);
 
                     wattron(win, style);
                     mvwprintw(win, 2 + i, cols/2 + 1, "%s", _name.c_str());
@@ -330,7 +329,12 @@ void FilePanel::updateFiles() {
 void FilePanel::rescanDirectory() {
     dir->clear();
 
-    files = dir->getDirectory(path, showDot);
+    try {
+        files = dir->getDirectory(path, showDot);
+    } catch (const std::exception &e) {
+
+        return;
+    }
     sortDirectory(files);
     filesCount = files->size();
 

@@ -64,9 +64,13 @@ void Workspace::show(int rows, int cols) {
                     if (f->type == regular) {
                         std::string file = current->getPath() + "/" + f->name;
                         if (config->isInternalView()) {
-                            WindowView *w = new WindowView();
-                            w->draw(0, 0, rows - 1, cols, WHITE_ON_BLUE, file);
-                            delete w;
+                            try {
+                                WindowView *w = new WindowView(file);
+                                w->draw(0, 0, rows - 1, cols, WHITE_ON_BLUE);
+                                delete w;
+                            } catch (const std::exception &e) {
+                                ;
+                            }
                         } else {
                             endwin();
 

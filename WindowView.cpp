@@ -5,22 +5,29 @@
 #include "WindowView.h"
 #include "Colors.h"
 #include "KeyBar.h"
+#include "Utils.h"
 
-WindowView::WindowView() {
+WindowView::WindowView(std::string fileName) {
+    file.open(fileName.c_str(), std::fstream::ate);
+    if (!file.is_open())
+        throw std::runtime_error("can't open file for view");
+    e = file.tellg();   // end of file
+
+    file.seekg(0);
+    this->fileName = fileName;
     Colors::initColors();
+    pos = 0;
+    lines.clear();
+    lines.push_back(file.tellg());
 }
 
 WindowView::~WindowView() {
+    file.close();
+    delwin(content);
 }
 
-void WindowView::draw(int y, int x, int rows, int cols, bool colour, std::string fileName) throw(std::string) {
-    // open and read file
-    std::ifstream file;
-    file.open(fileName.c_str());
-    if (!file)
-        throw std::runtime_error("can't open file");
-
-    WINDOW *win = newwin(rows, cols, y, x);
+void WindowView::draw(int y, int x, int r, int c, bool colour) {
+    WINDOW *win = newwin(r, c, y, x);
     box(win, 0, 0);
     if (colour > 0)
         wbkgd(win, COLOR_PAIR(colour));
@@ -29,25 +36,25 @@ void WindowView::draw(int y, int x, int rows, int cols, bool colour, std::string
     mvwprintw(win, 0, 2, " %s ", fileName.c_str());
     wrefresh(win);
 
-    WINDOW *content = newwin(rows-2, cols-2, y+1, x+1);
+    rows = r-2;
+    cols = c-2;
+    content = newwin(rows, cols, y+1, x+1);
     if (colour > 0)
         wbkgd(content, COLOR_PAIR(colour));
 
+    // print file content for current window
+    readFile();
 
-    std::string line;
-    int i = 0;
-    while (getline(file, line) && i < rows-2) {
-        mvwprintw(content, 1+i, 1, line.c_str());
-        i++;
-    }
-
-    wrefresh(content);
+    // debug
+    mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
+    wrefresh(win);
+    // debug
 
     // read keypressed
     bool ret = false;
     while (!ret) {
-        int c = mvgetch(0,cols-1);
-        switch (c) {
+        int ch = mvgetch(0,c-1);
+        switch (ch) {
             // functional
             case KEY_F(1):
                 break;
@@ -56,21 +63,67 @@ void WindowView::draw(int y, int x, int rows, int cols, bool colour, std::string
                 ret = true;
                 break;
             case KEY_UP:
+                if (pos > 0)
+                    pos--;
+                readFile();
+
+                // debug
+                mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
                 wrefresh(win);
                 break;
             case KEY_DOWN:
+                if (pos+rows < lines.size())
+                    pos++;
+                readFile();
+
+                // debug
+                mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
+                wrefresh(win);
                 break;
             case KEY_LEFT:
                 break;
             case KEY_RIGHT:
+                break;
+            case 'G':
+                break;
+            case ' ':
+                if (lines.size() - pos > rows-1)
+                    pos+= rows-2;
+//                else
+//                    pos =+ lines.size() - 1;
+
+                readFile();
+
+                // debug
+                mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
+                wrefresh(win);
                 break;
             default:
                 break;
         }
         wrefresh(content);
     }
-
-    file.close();
-    delwin(content);
     delwin(win);
+}
+
+void WindowView::readFile() {
+    std::string line;
+    file.seekg(lines.at(pos));
+    for (int i = 1; i < rows+1; i++) {
+        if (file.tellg() != e) {
+            std::getline(file, line);
+            util::Utils::paddingRight(&line, cols);
+            mvwprintw(content, i-1, 0, line.c_str());
+            if (pos + i + 1 > lines.size())
+                lines.push_back(file.tellg());
+        } else {
+            // clear last line in case of scroll
+            if (i < rows+1) {
+                line = "";
+                util::Utils::paddingRight(&line, cols);
+            }
+            mvwprintw(content, i-1, 0, line.c_str());
+        }
+    }
+    wrefresh(content);
 }
