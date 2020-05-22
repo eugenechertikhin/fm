@@ -423,6 +423,10 @@ void FilePanel::moveRight() {
     showCursor(false);
 }
 
+void FilePanel::clear() {
+    wclear(win);
+}
+
 void FilePanel::enter() {
     FileEntry *f = getCurrentFile();
     if (f->type == directory) {

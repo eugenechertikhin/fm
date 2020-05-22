@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <unistd.h>
 #include "Workspace.h"
 #include "WindowView.h"
 #include "WindowEdit.h"
@@ -130,8 +131,8 @@ void Workspace::show(int rows, int cols) {
             case KEY_F(10): {
                     if (config->isConfirmExit()) {
                         // todo move it to another class
-                        WindowExit *w = new WindowExit();
-                        ex = w->draw(5, 28, rows/2 - 3, cols/2 - 14, BLACK_ON_GREY);
+                        WindowExit *w = new WindowExit(rows/2, cols/2, 5, 45);
+                        ex = w->draw(BLACK_ON_GREY);
                         delete w;
                         left->update();
                         right->update();
@@ -159,39 +160,67 @@ void Workspace::show(int rows, int cols) {
                 current->moveRight();
                 break;
 
-            // redraw screen ^L
-            // select file ^T
-            // select files goup ^+
-            // unselect file group ^-
-            // swap panel ^U
-            // quick change dir ^C
-            // change attr (own,mod) ??? ^X
-            // find file ^S
-            // compare files ^D
-            // show screen ^O
-            // history window ^H
+            // screen commannds
+            case 12: // redraw screen ^L
+                current->update();
+                current->getNext()->update();
+                doupdate();
+                break;
+            case 20: // select file ^T
+                break;
+            case 61: // select files goup ^+
+                break;
+            case 31: // unselect file group ^-
+                break;
+            case 21: // swap panel ^U
+                break;
+            case 3: // quick change dir ^C
+                break;
+            case 24: // change attr (own,mod) ??? ^X
+                break;
+            case 19: // find file ^S
+                break;
+            case 4: // compare files ^D
+                break;
+            case 15: // show screen ^O
+                endwin();
+                getchar();
+                fflush(stdin);
+                break;
+            case 25:  // history window ^H
+                break;
+            case 28: // find ^H
+                break;
+            case 18: // re-read directory ^R
+                current->clear();
+                current->printInside();
+                current->rescanDirectory();
+                current->showCursor(true);
+                doupdate();
+                break;
 
             // bash commands
-            // begin user line ^A
-            // end user line ^E
-            // remove last word ^W
-            // removve all after cursor ^K
-            // char right ^F
-            // char left ^B
+            case 1: // begin user line ^A
+                break;
+            case 5: // end user line ^E
+                break;
+            case 23: // remove last word ^W
+                break;
+            case 11: // remove all after cursor ^K
+                break;
+            case 6: // char right ^F
+                break;
+            case 2: // char left ^B
+                break;
 
-            // find ^/
-
-            // backspace
-            case 127:
+            case 127: // backspace
                 cmd.pop_back();
                 break;
-            // enter key
-            case 10: {
+            case 10: { // enter key
                     if (cmd.size() < 1) {
                         current->enter();
                         break;
                     }
-
                     endwin();
 
                     std::string s = "cd " + current->getPath() + "; " + cmd;
@@ -199,9 +228,12 @@ void Workspace::show(int rows, int cols) {
 
                     if (config->isConfirmExecute()) {
                         std::cout << "Press enter to continue...";
-                        getch();
+                        fflush(stdout);
+                        getchar();
+                        fflush(stdin);
                     }
                     current->rescanDirectory();
+                    current->getNext()->rescanDirectory();
                     current->showCursor(true);
 
                     // todo: save command to history
@@ -211,7 +243,8 @@ void Workspace::show(int rows, int cols) {
                 }
                 break;
             default:
-                cmd.push_back(c);
+                if (keyname(c)[0] != '^' || c != 8)
+                    cmd.push_back(c);
                 break;
         }
 

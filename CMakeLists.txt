@@ -9,11 +9,10 @@ add_executable(fm
         Config.cpp
         Directory.cpp
         main.cpp
-        Operations.cpp
         Workspace.cpp
         FilePanel.cpp
         WindowExit.cpp
         WindowView.cpp
-        WindowEdit.cpp WindowError.cpp WindowError.h)
+        WindowEdit.cpp WindowError.cpp WindowError.h Keys.h)
 
 target_link_libraries(fm panel ncurses)

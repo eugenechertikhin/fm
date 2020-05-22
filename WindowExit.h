@@ -6,15 +6,22 @@
 
 #include <string>
 #include <ncurses.h>
+#include "Keys.h"
 
 class WindowExit {
 public:
-    WindowExit();
+    WindowExit(int y, int x, int r, int c);
     ~WindowExit();
 
-    bool draw(int y, int x, int rows, int cols, int colour);
+    bool draw(int colour);
+
+    void showCursor(Keys *k);
+    void hideCursor(Keys *k);
 
 private:
     WINDOW *win;
+    int colour;
+    int startx, starty;
+    int rows, cols;
 };
 

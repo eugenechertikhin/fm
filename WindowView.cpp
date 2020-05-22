@@ -38,9 +38,9 @@ void WindowView::draw(int y, int x, int r, int c, bool colour) {
 
     rows = r-2;
     cols = c-2;
-    content = newwin(rows, cols, y+1, x+1);
-    if (colour > 0)
-        wbkgd(content, COLOR_PAIR(colour));
+//    content = newwin(rows, cols, y+1, x+1);
+//    if (colour > 0)
+//        wbkgd(content, COLOR_PAIR(colour));
 
     // print file content for current window
     readFile();

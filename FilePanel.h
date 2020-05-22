@@ -32,6 +32,7 @@ public:
     void draw(int y, int x, int rows, int cols, bool colour);
     void printInside();
     void update();
+    void clear();
 
     void hideCursor(bool p);
     void showCursor(bool p);
