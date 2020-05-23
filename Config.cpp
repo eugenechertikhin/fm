@@ -7,9 +7,11 @@
 #include "Simpleini/Simpleini.h"
 
 Config::Config() {
+    history = new std::vector<std::string>;
 }
 
 Config::~Config() {
+    // todo save history
     // todo save config to ini
 }
 
@@ -42,6 +44,7 @@ void Config::loadConfig() {
     viewerCmd = "less";
 
     // todo load config from ini
+    // todo load history
 }
 
 void Config::setColor(bool colour) {
@@ -254,4 +257,8 @@ bool Config::isConfirmOverride() {
 }
 void Config::setConfirmOverride(bool confirm) {
     confirmOverride = confirm;
+}
+
+std::vector<std::string> *Config::getHistory() {
+    return history;
 }

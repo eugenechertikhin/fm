@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #define CONFIG_DIR "~/.fc"
 #define CONFIG_NAME "config"
@@ -121,6 +122,8 @@ class Config {
     bool isConfirmOverride();
     void setConfirmOverride(bool confirm);
 
+    std::vector<std::string> *getHistory();
+
 private:
     std::string defaultPath;
     bool color, root;
@@ -144,4 +147,6 @@ private:
 
     bool showDot, showBorder, showStatus, showFree, showTotal, showMenuBar, showKeyBar, useSi;
     bool confirmExit, confirmDelete, confirmOverride, confirmExecute;
+
+    std::vector<std::string> *history;
 };

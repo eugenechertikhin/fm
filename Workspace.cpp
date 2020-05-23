@@ -235,7 +235,7 @@ void Workspace::show(int rows, int cols) {
                     current->getNext()->rescanDirectory();
                     current->showCursor(true);
 
-                    // todo: save command to history
+                    config->getHistory()->push_back(cmd);
 
                     // clear command line
                     cmd = "";

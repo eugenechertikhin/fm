@@ -3,6 +3,7 @@
 //
 
 #include <algorithm>
+#include <iostream>
 #include "FilePanel.h"
 #include "Colors.h"
 
@@ -128,6 +129,8 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
     this->rows = rows;
     this->colour = colour;
 
+    dir = new Directory();
+
     pos = 0;
     offset = 0;
 
@@ -137,18 +140,9 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
 
     printInside();
 
-    if (type == FileList) {
-        // read dir
-        dir = new Directory();
-        rescanDirectory();
-    }
-
-    updateStatusLine();
-
     wrefresh(win);
 }
 
-// print window inside lines and column names
 void FilePanel::printInside() {
     box(win, 0, 0);
 
@@ -209,6 +203,10 @@ void FilePanel::printInside() {
             mvwprintw(win, 1, cols/2 + 1, HEADER_NAME);
             wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
         }
+
+        rescanDirectory();
+        updateFiles();
+        updateStatusLine();
     } else if (type == Tree) {
         // todo tree panel
     } else if (type == Info) {
@@ -342,8 +340,6 @@ void FilePanel::rescanDirectory() {
     struct statvfs statfs;
     statvfs(path.c_str(), &statfs);
     mvwprintw(win, rows-1, 2, " %u / %u ", statfs.f_bavail*statfs.f_frsize, statfs.f_bfree*statfs.f_frsize);
-
-    updateFiles();
 }
 
 void FilePanel::moveUp() {
@@ -427,21 +423,39 @@ void FilePanel::clear() {
 void FilePanel::enter() {
     FileEntry *f = getCurrentFile();
     if (f->type == directory) {
-        if (f->name == "..")
-            path = util::Utils::parentPath(path);
-        else
-            (path == "/") ? path.append(f->name) : path.append("/" + f->name);  // todo
+
+        std::string name;
+        pos = 0;
+        offset = 0;
+        if (f->name == "..") {
+            size_t p = path.find_last_of("\\/");
+            std::string res = path.substr(0, p);
+            name = path.substr(p+1, path.size());
+            res.empty() ? path = "/" : path = res;
+
+            rescanDirectory();
+            bool found = false;
+            for (int i = 0; i < files->size(); i++) {
+                if (files->at(i)->name == name) {
+                    found = true;
+                    break;
+                }
+
+                if (pos > rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE)
+                    offset++;
+                else
+                    pos++;
+            }
+
+            if (!found) {
+                pos = 0;
+                offset = 0;
+            }
+        } else
+            (path == "/") ? path.append(f->name) : path.append("/" + f->name);
 
         wclear(win);
         printInside();
-
-        rescanDirectory();
-
-        // todo: set cursor to prev_dir
-        pos = 0;
-        offset = 0;
-
-        updateStatusLine();
         showCursor(true);
     } else if (false) {
         // todo run file
