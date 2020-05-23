@@ -64,7 +64,7 @@ void FilePanel::setShowDot(bool showDot) {
     this->showDot = showDot;
 }
 
-// desc order doesn't work
+// todo desc order doesn't work
 void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
     if (sortType != Unsorted) {
         if (sortType == Name) {
@@ -78,7 +78,7 @@ void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
                 });
             }
         } else if (sortType == Ext) {
-            // todo
+            // todo sort by extension
         } else if (sortType == Size) {
             if (sortOrder) {
                 sort(files->begin(), files->end(), [](const FileEntry *l, const FileEntry *r) {
@@ -179,7 +179,7 @@ void FilePanel::printInside() {
             rowsCount = rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE;
             cursorLengh = cols - (EXTRA_COLUMN * (modeParams->size()-1)) - 2;
             if (cursorLengh < 0)
-                ; // todo print error
+                throw std::runtime_error("screen size is too small");
 
             for (int i = 0; i < rows-1 - STATUS_LINE; i++) {
                 for (int j = 1; j < modeParams->size(); j++)
@@ -210,11 +210,11 @@ void FilePanel::printInside() {
             wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
         }
     } else if (type == Tree) {
-        // todo
+        // todo tree panel
     } else if (type == Info) {
-        // todo
+        // todo info panel
     } else if (type == QuickView) {
-        // todo
+        // todo quickview panel
     }
 }
 void FilePanel::update() {
@@ -266,9 +266,6 @@ FileEntry *FilePanel::getCurrentFile() {
 }
 
 void FilePanel::updateStatusLine() {
-    // todo debug
-    //mvwprintw(win, 0, 50, "%d / %d (%d)", pos, offset, filesCount);
-
     std::string _name = files->at(pos + offset)->name;
     util::Utils::paddingRight(&_name, cols-22);
     mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", _name.c_str());
@@ -433,7 +430,7 @@ void FilePanel::enter() {
         if (f->name == "..")
             path = util::Utils::parentPath(path);
         else
-            (path == "/") ? path.append(f->name) : path.append("/" + f->name);
+            (path == "/") ? path.append(f->name) : path.append("/" + f->name);  // todo
 
         wclear(win);
         printInside();

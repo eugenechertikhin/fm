@@ -10,8 +10,7 @@ Config::Config() {
 }
 
 Config::~Config() {
-    // save config to ini
-    // todo
+    // todo save config to ini
 }
 
 void Config::loadConfig() {
@@ -42,8 +41,7 @@ void Config::loadConfig() {
     editorCmd = "vi";
     viewerCmd = "less";
 
-    // load config from ini
-    // todo
+    // todo load config from ini
 }
 
 void Config::setColor(bool colour) {

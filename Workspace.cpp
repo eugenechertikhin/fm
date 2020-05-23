@@ -6,6 +6,7 @@
 #include <vector>
 #include <unistd.h>
 #include "Workspace.h"
+#include "WindowHelp.h"
 #include "WindowView.h"
 #include "WindowEdit.h"
 #include "WindowExit.h"
@@ -56,7 +57,13 @@ void Workspace::show(int rows, int cols) {
         int c = mvgetch(rows-1,s.size());
         switch (c) {
             // functional
-            case KEY_F(1):
+            case KEY_F(1): {
+                    WindowHelp *w = new WindowHelp(5, 20, rows - 10, cols - 40);
+                    w->draw(WHITE_ON_BLUE);
+                    delete w;
+                    left->update();
+                    right->update();
+                }
                 break;
             case KEY_F(2):
                 break;
@@ -78,10 +85,6 @@ void Workspace::show(int rows, int cols) {
                             std::string pager = config->getViewer() + " " + file;
                             system(const_cast<char *>(pager.c_str()));
 
-                            if (config->isConfirmExecute()) {
-                                std::cout << "Press enter to continue...";
-                                getch();
-                            }
                             current->rescanDirectory();
                             current->showCursor(true);
                         }
@@ -106,10 +109,6 @@ void Workspace::show(int rows, int cols) {
                             std::string edit = config->getEditor() + " " + file;
                             system(const_cast<char *>(edit.c_str()));
 
-                            if (config->isConfirmExecute()) {
-                                std::cout << "Press enter to continue...";
-                                getch();
-                            }
                             current->rescanDirectory();
                             current->showCursor(true);
                         }
@@ -130,7 +129,6 @@ void Workspace::show(int rows, int cols) {
                 break;
             case KEY_F(10): {
                     if (config->isConfirmExit()) {
-                        // todo move it to another class
                         WindowExit *w = new WindowExit(rows/2, cols/2, 5, 45);
                         ex = w->draw(BLACK_ON_GREY);
                         delete w;
@@ -141,6 +139,7 @@ void Workspace::show(int rows, int cols) {
                     }
                 }
                 break;
+
             // moving keys
             case 9: // TAB
                 current->hideCursor(true);

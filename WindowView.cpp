@@ -8,14 +8,15 @@
 #include "Utils.h"
 
 WindowView::WindowView(std::string fileName) {
+    Colors::initColors();
+
     file.open(fileName.c_str(), std::fstream::ate);
     if (!file.is_open())
         throw std::runtime_error("can't open file for view");
     e = file.tellg();   // end of file
+    file.seekg(0); // move to begin of file
 
-    file.seekg(0);
     this->fileName = fileName;
-    Colors::initColors();
     pos = 0;
     lines.clear();
     lines.push_back(file.tellg());
@@ -23,7 +24,6 @@ WindowView::WindowView(std::string fileName) {
 
 WindowView::~WindowView() {
     file.close();
-    delwin(content);
 }
 
 void WindowView::draw(int y, int x, int r, int c, bool colour) {
@@ -38,26 +38,24 @@ void WindowView::draw(int y, int x, int r, int c, bool colour) {
 
     rows = r-2;
     cols = c-2;
-//    content = newwin(rows, cols, y+1, x+1);
-//    if (colour > 0)
-//        wbkgd(content, COLOR_PAIR(colour));
+    content = newwin(rows, cols, y+1, x+1);
+    if (colour > 0)
+        wbkgd(content, COLOR_PAIR(colour));
 
     // print file content for current window
     readFile();
-
-    // debug
-    mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
-    wrefresh(win);
-    // debug
+    wrefresh(content);
 
     // read keypressed
     bool ret = false;
     while (!ret) {
         int ch = mvgetch(0,c-1);
         switch (ch) {
-            // functional
             case KEY_F(1):
                 break;
+            case 'q':
+            case 'Q':
+            case 27: // ESC
             case KEY_F(3):
             case KEY_F(10):
                 ret = true;
@@ -66,19 +64,11 @@ void WindowView::draw(int y, int x, int r, int c, bool colour) {
                 if (pos > 0)
                     pos--;
                 readFile();
-
-                // debug
-                mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
-                wrefresh(win);
                 break;
             case KEY_DOWN:
                 if (pos+rows < lines.size())
                     pos++;
                 readFile();
-
-                // debug
-                mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
-                wrefresh(win);
                 break;
             case KEY_LEFT:
                 break;
@@ -93,16 +83,16 @@ void WindowView::draw(int y, int x, int r, int c, bool colour) {
 //                    pos =+ lines.size() - 1;
 
                 readFile();
-
-                // debug
-                mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
-                wrefresh(win);
-                break;
-            default:
                 break;
         }
+
+        // debug
+        mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
+        wrefresh(win);
+
         wrefresh(content);
     }
+    delwin(content);
     delwin(win);
 }
 
@@ -125,5 +115,4 @@ void WindowView::readFile() {
             mvwprintw(content, i-1, 0, line.c_str());
         }
     }
-    wrefresh(content);
 }

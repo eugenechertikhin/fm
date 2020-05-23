@@ -14,7 +14,7 @@ enum FileType {
     blockdev,
     regular,
     softlink,
-    socket
+    socket,
 };
 
 struct FileEntry {
@@ -28,6 +28,7 @@ struct FileEntry {
     std::string mtime;
     std::string ctime;
     std::string perm;
+    bool select;
 };
 
 class Directory {

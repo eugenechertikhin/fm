@@ -45,6 +45,8 @@ std::vector<FileEntry *> *Directory::getDirectory(std::string path, bool showDot
                 bzero(perm, 5);
 
                 FileEntry *e = new FileEntry();
+                e->select = false;
+
                 e->name = dirent->d_name;
                 e->size = sb.st_size;
                 e->uid = sb.st_uid;

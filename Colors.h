@@ -32,6 +32,7 @@ public:
 
         if (f == directory)
             s = A_BOLD;
+
         // todo coloring
 
         return s;
