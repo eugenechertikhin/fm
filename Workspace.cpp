@@ -3,8 +3,7 @@
 //
 
 #include <iostream>
-#include <vector>
-#include <unistd.h>
+#include "Window.h"
 #include "Workspace.h"
 #include "WindowHelp.h"
 #include "WindowView.h"
@@ -12,10 +11,21 @@
 #include "WindowExit.h"
 #include "Colors.h"
 #include "Directory.h"
-#include "KeyBar.h"
 
 Workspace::Workspace(Config *pConfig) {
     config = pConfig;
+
+    keyBar = new std::vector<std::string>;
+    keyBar->push_back("Help");
+    keyBar->push_back("Menu");
+    keyBar->push_back("View");
+    keyBar->push_back("Edit");
+    keyBar->push_back("Copy");
+    keyBar->push_back("Move");
+    keyBar->push_back("MkDir");
+    keyBar->push_back("Remove");
+    keyBar->push_back("Config");
+    keyBar->push_back("Quit");
 }
 
 Workspace::~Workspace() {
@@ -23,6 +33,13 @@ Workspace::~Workspace() {
 
 void Workspace::show(int rows, int cols) {
     bool ex = false;
+    int minus = 1;  // for path
+
+    if (config->isShowKeyBar())
+        minus++;
+
+    if (config->isShowMenuBar())
+        minus++;
 
     FilePanel *left = new FilePanel();
     left->setPath(config->getLeftPath());
@@ -30,7 +47,7 @@ void Workspace::show(int rows, int cols) {
     left->setSort(config->getLeftSort(), config->getLeftSortOrder());
     left->setType(config->getLeftType());
     left->setShowDot(config->isShowDot());
-    left->draw(0, 0, rows - 1, cols / 2, config->isColour());
+    left->draw(0, 0, rows-minus, cols/2, config->isColour());
 
     FilePanel *right = new FilePanel();
     right->setPath(config->getRightPath());
@@ -38,7 +55,7 @@ void Workspace::show(int rows, int cols) {
     right->setSort(config->getRightSort(), config->getRightSortOrder());
     right->setType(config->getRightType());
     right->setShowDot(config->isShowDot());
-    right->draw(0, cols / 2, rows - 1, cols / 2, config->isColour());
+    right->draw(0, cols/2, rows-minus, cols / 2, config->isColour());
 
     left->setNext(right);
     right->setNext(left);
@@ -46,15 +63,18 @@ void Workspace::show(int rows, int cols) {
     current = left;
     current->showCursor(true);
 
+    if (config->isShowKeyBar())
+        showKeyBar(rows-1, keyBar);
+
     // read keypressed
     while (!ex) {
-        move(rows-1, 0);
+        move(rows-minus, 0);
         clrtoeol();
 
         std::string s(current->getPath() + ' ' + config->getUserPromp() + ' ' + cmd);
-        mvprintw(rows-1, 0, const_cast<char *>(s.c_str()));
+        mvprintw(rows-minus, 0, const_cast<char *>(s.c_str()));
 
-        int c = mvgetch(rows-1,s.size());
+        int c = mvgetch(rows-minus,s.size());
         switch (c) {
             // functional
             case KEY_F(1): {
@@ -88,6 +108,7 @@ void Workspace::show(int rows, int cols) {
                             current->rescanDirectory();
                             current->showCursor(true);
                         }
+                        showKeyBar(rows-1, keyBar);
                         left->update();
                         right->update();
                     } else if (f->type == directory) {
@@ -112,6 +133,7 @@ void Workspace::show(int rows, int cols) {
                             current->rescanDirectory();
                             current->showCursor(true);
                         }
+                        showKeyBar(rows-1, keyBar);
                         left->update();
                         right->update();
                     }

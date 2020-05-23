@@ -4,10 +4,21 @@
 
 #include "WindowEdit.h"
 #include "Colors.h"
-#include "KeyBar.h"
 
 WindowEdit::WindowEdit() {
     Colors::initColors();
+
+    keyBar = new std::vector<std::string>;
+    keyBar->push_back("Help");
+    keyBar->push_back("Save");
+    keyBar->push_back("");
+    keyBar->push_back("Quit");
+    keyBar->push_back("");
+    keyBar->push_back("View");
+    keyBar->push_back("Find");
+    keyBar->push_back("");
+    keyBar->push_back("Code");
+    keyBar->push_back("Quit");
 }
 
 WindowEdit::~WindowEdit() {
@@ -33,6 +44,7 @@ void WindowEdit::draw(int y, int x, int rows, int cols, bool colour, std::string
     if (colour > 0)
         wbkgd(content, COLOR_PAIR(colour));
 
+    showKeyBar(rows+1, keyBar);
 
     std::string line;
     int i = 0;

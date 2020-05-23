@@ -4,14 +4,13 @@
 
 #pragma once
 
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <ncurses.h>
-#include <vector>
+#include "Window.h"
 
 // throw(std::string)
-class WindowView {
+class WindowView: public Window {
 public:
     WindowView(std::string fileName);
     ~WindowView();

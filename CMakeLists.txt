@@ -13,7 +13,9 @@ add_executable(fm
         FilePanel.cpp
         WindowExit.cpp
         WindowView.cpp
-        WindowEdit.cpp WindowError.cpp WindowError.h Keys.h WindowHelp.cpp WindowHelp.h)
+        WindowEdit.cpp
+        WindowError.cpp
+        WindowHelp.cpp)
 
 target_link_libraries(fm panel ncurses)
 

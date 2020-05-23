@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <string>
 #include <fstream>
 #include <ncurses.h>
+#include "Window.h"
 
-class WindowEdit {
+class WindowEdit: public Window {
 public:
     WindowEdit();
     ~WindowEdit();

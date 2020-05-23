@@ -43,6 +43,8 @@ void Config::loadConfig() {
     editorCmd = "vi";
     viewerCmd = "less";
 
+//    showKeyBar = true;
+
     // todo load config from ini
     // todo load history
 }

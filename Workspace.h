@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <string>
 #include "Config.h"
 #include "FilePanel.h"
+#include "Window.h"
 
-class Workspace {
+class Workspace: public Window {
 public:
     Workspace(Config *pConfig);
     ~Workspace();

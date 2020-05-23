@@ -4,11 +4,22 @@
 
 #include "WindowView.h"
 #include "Colors.h"
-#include "KeyBar.h"
 #include "Utils.h"
 
 WindowView::WindowView(std::string fileName) {
     Colors::initColors();
+
+    keyBar = new std::vector<std::string>;
+    keyBar->push_back("Help");
+    keyBar->push_back("Unwrap");
+    keyBar->push_back("Quit");
+    keyBar->push_back("Hex");
+    keyBar->push_back("");
+    keyBar->push_back("Edit");
+    keyBar->push_back("Find");
+    keyBar->push_back("");
+    keyBar->push_back("Code");
+    keyBar->push_back("Quit");
 
     file.open(fileName.c_str(), std::fstream::ate);
     if (!file.is_open())
@@ -24,6 +35,7 @@ WindowView::WindowView(std::string fileName) {
 
 WindowView::~WindowView() {
     file.close();
+    delete keyBar;
 }
 
 void WindowView::draw(int y, int x, int r, int c, bool colour) {
@@ -35,6 +47,10 @@ void WindowView::draw(int y, int x, int r, int c, bool colour) {
     // print filename at the header
     mvwprintw(win, 0, 2, " %s ", fileName.c_str());
     wrefresh(win);
+
+    move(r, 0);
+    clrtoeol();
+    showKeyBar(r, keyBar);
 
     rows = r-2;
     cols = c-2;
