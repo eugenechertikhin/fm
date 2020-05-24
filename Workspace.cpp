@@ -33,29 +33,20 @@ Workspace::~Workspace() {
 
 void Workspace::show(int rows, int cols) {
     bool ex = false;
-    int minus = 1;  // for path
 
-    if (config->isShowKeyBar())
-        minus++;
-
-    if (config->isShowMenuBar())
-        minus++;
-
-    FilePanel *left = new FilePanel();
+    FilePanel *left = new FilePanel(config);
     left->setPath(config->getLeftPath());
     left->setMode(config->getLeftMode(), config->getLeftModeParams());
     left->setSort(config->getLeftSort(), config->getLeftSortOrder());
     left->setType(config->getLeftType());
-    left->setShowDot(config->isShowDot());
-    left->draw(0, 0, rows-minus, cols/2, config->isColour());
+    left->draw(0, 0, rows, cols/2, config->isColour());
 
-    FilePanel *right = new FilePanel();
+    FilePanel *right = new FilePanel(config);
     right->setPath(config->getRightPath());
     right->setMode(config->getRightMode(), config->getRightModeParams());
     right->setSort(config->getRightSort(), config->getRightSortOrder());
     right->setType(config->getRightType());
-    right->setShowDot(config->isShowDot());
-    right->draw(0, cols/2, rows-minus, cols / 2, config->isColour());
+    right->draw(0, cols/2, rows, cols / 2, config->isColour());
 
     left->setNext(right);
     right->setNext(left);
@@ -63,8 +54,11 @@ void Workspace::show(int rows, int cols) {
     current = left;
     current->showCursor(true);
 
-    if (config->isShowKeyBar())
-        showKeyBar(rows-1, keyBar);
+    int minus = 1;
+    if (config->isShowKeyBar()) {
+        showKeyBar(rows - 1, keyBar);
+        minus++;
+    }
 
     // read keypressed
     while (!ex) {
@@ -253,14 +247,20 @@ void Workspace::show(int rows, int cols) {
                         getchar();
                         fflush(stdin);
                     }
-                    current->rescanDirectory();
-                    current->getNext()->rescanDirectory();
-                    current->showCursor(true);
 
                     config->getHistory()->push_back(cmd);
-
-                    // clear command line
                     cmd = "";
+
+                    current->clear();
+                    current->printInside();
+                    current->rescanDirectory();
+                    current->showCursor(true);
+
+                    current->getNext()->clear();
+                    current->getNext()->printInside();
+                    current->getNext()->rescanDirectory();
+                    current->getNext()->update();
+                    doupdate();
                 }
                 break;
             default:

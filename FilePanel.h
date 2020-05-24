@@ -16,7 +16,7 @@
 class FilePanel {
 
 public:
-    FilePanel();
+    FilePanel(Config *conf);
     ~FilePanel();
 
     void setNext(FilePanel *fp);
@@ -27,7 +27,6 @@ public:
     void setType(PanelType type);
     void setMode(ListMode mode, std::string params);
     void setSort(SortType sortType, bool sortOrder);
-    void setShowDot(bool showDot);
 
     void draw(int y, int x, int rows, int cols, bool colour);
     void printInside();
@@ -50,6 +49,9 @@ public:
     FileEntry *getCurrentFile();
 
 private:
+    Config *config;
+    int statusLine, topLine, keybar;
+
     void sortDirectory(std::vector<FileEntry *> *files);
 
     std::string path;
@@ -58,7 +60,6 @@ private:
     std::vector<std::string> *modeParams;
     SortType sortType;
     bool sortOrder; // true == asc
-    bool showDot, showBorder, showStatus, showFree, showTotal, useSi;
 
     int cols;
     int rows;

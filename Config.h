@@ -6,9 +6,12 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
+#include "Simpleini/Simpleini.h"
 
-#define CONFIG_DIR "~/.fc"
+#define CONFIG_PATH "/.fm_"
 #define CONFIG_NAME "config"
+#define HISTORY_NAME "history"
 
 enum PanelType {
     FileList,
@@ -37,8 +40,8 @@ class Config {
 
   public:
     Config();
-    ~Config();
 
+    void saveConfig();
     void loadConfig();
 
     void setColor(bool colour);

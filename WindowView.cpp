@@ -95,17 +95,9 @@ void WindowView::draw(int y, int x, int r, int c, bool colour) {
             case ' ':
                 if (lines.size() - pos > rows-1)
                     pos+= rows-2;
-//                else
-//                    pos =+ lines.size() - 1;
-
                 readFile();
                 break;
         }
-
-        // debug
-        mvwprintw(win, 0, 50, " %d (%d)   ", pos, lines.size());
-        wrefresh(win);
-
         wrefresh(content);
     }
     delwin(content);

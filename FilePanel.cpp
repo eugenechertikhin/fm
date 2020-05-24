@@ -7,9 +7,7 @@
 #include "FilePanel.h"
 #include "Colors.h"
 
-#define STATUS_LINE 3
 #define EXTRA_COLUMN 11
-#define TOP_LINE 1
 #define COLUMN_NAME_LINE 1
 
 #define HEADER_NAME "Name"
@@ -19,16 +17,19 @@
 //c = "Create";
 #define HEADER_PERM "Perm"
 
-FilePanel::FilePanel() {
+FilePanel::FilePanel(Config *conf) {
+    config = conf;
     Colors::initColors();
     modeParams = new std::vector<std::string>;
 
-    showDot = true;
-    showBorder = true;
-    showStatus = true;
-    showFree = true;
-    showTotal = true;
-    useSi = true;
+    if (config->isShowStatus()) statusLine = 3;
+    else statusLine = 0;
+
+    if (config->isShowMenuBar()) topLine = 1;
+    else topLine = 0;
+
+    if (config->isShowKeyBar()) keybar = 1;
+    else keybar = 0;
 }
 
 FilePanel::~FilePanel() {
@@ -60,9 +61,6 @@ void FilePanel::setMode(ListMode mode, std::string params) {
 void FilePanel::setSort(SortType sortType, bool sortOrder) {
     this->sortType = sortType;
     this->sortOrder = sortOrder;
-}
-void FilePanel::setShowDot(bool showDot) {
-    this->showDot = showDot;
 }
 
 // todo desc order doesn't work
@@ -126,7 +124,7 @@ void FilePanel::sortDirectory(std::vector<FileEntry *> *files) {
 
 void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
     this->cols = cols;
-    this->rows = rows;
+    this->rows = rows-1; // because path-line
     this->colour = colour;
 
     dir = new Directory();
@@ -134,12 +132,11 @@ void FilePanel::draw(int y, int x, int rows, int cols, bool colour) {
     pos = 0;
     offset = 0;
 
-    win = newwin(rows, cols, y, x);
+    win = newwin(this->rows-topLine-keybar, cols, y+topLine, x);
     if (colour)
         wbkgd(win, COLOR_PAIR(WHITE_ON_BLUE));
 
     printInside();
-
     wrefresh(win);
 }
 
@@ -147,17 +144,19 @@ void FilePanel::printInside() {
     box(win, 0, 0);
 
     if (type == FileList) {
-        if (colour)
-            wattron(win, COLOR_PAIR(WHITE_ON_BLUE));
-        mvwaddch(win, rows - STATUS_LINE, 0, ACS_LTEE);
-        mvwhline(win, rows - STATUS_LINE, 1, ACS_HLINE, cols - 2);
-        mvwaddch(win, rows - STATUS_LINE, cols - 1, ACS_RTEE);
-        if (colour)
-            wattroff(win, COLOR_PAIR(WHITE_ON_BLUE));
+        if (config->isShowStatus()) {
+            if (colour)
+                wattron(win, COLOR_PAIR(WHITE_ON_BLUE));
+            mvwaddch(win, rows-statusLine-topLine-keybar, 0, ACS_LTEE);
+            mvwhline(win, rows-statusLine-topLine-keybar, 1, ACS_HLINE, cols - 2);
+            mvwaddch(win, rows-statusLine-topLine-keybar, cols - 1, ACS_RTEE);
+            if (colour)
+                wattroff(win, COLOR_PAIR(WHITE_ON_BLUE));
+        }
 
         // print path at the header
         wattron(win, COLOR_PAIR(1));
-        mvwprintw(win, 0, 2, " %s ", const_cast<char*>(path.c_str()));
+        mvwprintw(win, topLine, 2, " %s ", const_cast<char*>(path.c_str()));
         wattroff(win, COLOR_PAIR(1));
 
         // Override. Full is just variant of Custom
@@ -170,12 +169,12 @@ void FilePanel::printInside() {
         }
 
         if (mode == Custom) {
-            rowsCount = rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE;
+            rowsCount = rows-COLUMN_NAME_LINE-statusLine-topLine-keybar-1;
             cursorLengh = cols - (EXTRA_COLUMN * (modeParams->size()-1)) - 2;
             if (cursorLengh < 0)
                 throw std::runtime_error("screen size is too small");
 
-            for (int i = 0; i < rows-1 - STATUS_LINE; i++) {
+            for (int i = 0; i < rows - 1 - statusLine - topLine - keybar; i++) {
                 for (int j = 1; j < modeParams->size(); j++)
                     mvwaddch(win, i + 1, cols - (EXTRA_COLUMN * j) - 1, ACS_VLINE);
             }
@@ -191,16 +190,16 @@ void FilePanel::printInside() {
 
             wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
         } else if (mode == Brief) {
-            rowsCount = rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE;
+            rowsCount = rows-COLUMN_NAME_LINE-statusLine-topLine-keybar-1;
             cursorLengh = cols/2 - 2;
 
-            for (int i = 0; i < rows-1 - STATUS_LINE; i++)
+            for (int i = 0; i < rows - 1 - statusLine - topLine - keybar; i++)
                 mvwaddch(win, i + 1, cols/2 - 1, ACS_VLINE);
 
             // print column name
             wattron(win, COLOR_PAIR(YELLOW_ON_BLUE));
-            mvwprintw(win, 1, 1 + 1, HEADER_NAME);
-            mvwprintw(win, 1, cols/2 + 1, HEADER_NAME);
+            mvwprintw(win, 1 + topLine, 1 + 1, HEADER_NAME);
+            mvwprintw(win, 1 + topLine, cols/2 + 1, HEADER_NAME);
             wattroff(win, COLOR_PAIR(YELLOW_ON_BLUE));
         }
 
@@ -264,16 +263,18 @@ FileEntry *FilePanel::getCurrentFile() {
 }
 
 void FilePanel::updateStatusLine() {
-    std::string _name = files->at(pos + offset)->name;
-    util::Utils::paddingRight(&_name, cols-22);
-    mvwprintw(win, rowsCount + STATUS_LINE, 2, "%s", _name.c_str());
-    mvwprintw(win, rowsCount + STATUS_LINE, cols-22, "%d", files->at(pos+offset)->size);
-    mvwprintw(win, rowsCount + STATUS_LINE, cols-11, "%s", files->at(pos+offset)->perm.c_str());
+    if (config->isShowStatus()) {
+        std::string _name = files->at(pos + offset)->name;
+        util::Utils::paddingRight(&_name, cols - 22);
+        mvwprintw(win, rowsCount+topLine+statusLine, 2, "%s", _name.c_str());
+        mvwprintw(win, rowsCount+topLine+statusLine, cols - 22, "%d", files->at(pos + offset)->size);
+        mvwprintw(win, rowsCount+topLine+statusLine, cols - 11, "%s", files->at(pos + offset)->perm.c_str());
+    }
 }
 
 void FilePanel::updateFiles() {
     if (mode == Custom) {
-        for (int i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
+        for (int i = 0; i < rowsCount; i++) {
             if (i+offset < filesCount) {
                 std::string _name = files->at(i + offset)->name;
                 util::Utils::paddingRight(&_name, cursorLengh - 1);
@@ -292,7 +293,7 @@ void FilePanel::updateFiles() {
         }
     } else if (mode == Brief) {
         int i, j = 0;
-        for (i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
+        for (i = 0; i < rowsCount; i++) {
             if (i+offset < filesCount) {
                 std::string _name = files->at(i + offset)->name;
                 util::Utils::paddingRight(&_name, cursorLengh - 1);
@@ -306,7 +307,7 @@ void FilePanel::updateFiles() {
         }
 
         if (j < filesCount) {
-            for (i = 0; i < rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE; i++) {
+            for (i = 0; i < rowsCount; i++) {
                 if (i+j+offset < filesCount) {
                     std::string _name = files->at(i+j+offset)->name;
                     util::Utils::paddingRight(&_name, cursorLengh - 1);
@@ -325,7 +326,7 @@ void FilePanel::rescanDirectory() {
     dir->clear();
 
     try {
-        files = dir->getDirectory(path, showDot);
+        files = dir->getDirectory(path, config->isShowDot());
     } catch (const std::exception &e) {
 
         return;
@@ -334,12 +335,18 @@ void FilePanel::rescanDirectory() {
     filesCount = files->size();
 
     // show total files count
-    mvwprintw(win, 0, cols - 7, " %d ", files->size());
+    if (config->isShowTotal())
+        mvwprintw(win, 0, cols - 7, " %d ", files->size());
 
     // showTotalSpace / showFreeSpace
     struct statvfs statfs;
     statvfs(path.c_str(), &statfs);
-    mvwprintw(win, rows-1, 2, " %u / %u ", statfs.f_bavail*statfs.f_frsize, statfs.f_bfree*statfs.f_frsize);
+    if (config->isShowTotal() && config->isShowFree())
+        mvwprintw(win, rows-keybar-1, 2, " %u / %u ", statfs.f_bavail*statfs.f_frsize, statfs.f_bfree*statfs.f_frsize);
+    else if (config->isShowTotal())
+        mvwprintw(win, rows-keybar-1, 2, " %u ", statfs.f_bavail*statfs.f_frsize);
+    else if (config->isShowFree())
+        mvwprintw(win, rows-keybar-1, 2, " %u ", statfs.f_bfree*statfs.f_frsize);
 }
 
 void FilePanel::moveUp() {
@@ -441,10 +448,10 @@ void FilePanel::enter() {
                     break;
                 }
 
-                if (pos > rows - COLUMN_NAME_LINE - STATUS_LINE - TOP_LINE)
-                    offset++;
-                else
+                if (pos < rowsCount-1)
                     pos++;
+                else
+                    offset++;
             }
 
             if (!found) {

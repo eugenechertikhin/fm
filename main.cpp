@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <iostream>
+#include <sys/stat.h>
 #include "version.h"
 #include "Config.h"
 #include "Workspace.h"
@@ -71,6 +72,7 @@ int main(int argc, char **argv) {
     // switch to workspace
     Workspace *w = new Workspace(config);
     w->show(rows, cols);
+    config->saveConfig();
 
     delete w;
     delete config;
