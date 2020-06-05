@@ -15,7 +15,11 @@ add_executable(fm
         WindowView.cpp
         WindowEdit.cpp
         WindowError.cpp
-        WindowHelp.cpp)
+        WindowHelp.cpp
+        WindowCopy.cpp
+        WindowMove.cpp
+        WindowCreate.cpp
+        WindowDelete.cpp)
 
 target_link_libraries(fm panel ncurses)
 

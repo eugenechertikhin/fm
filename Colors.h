@@ -12,6 +12,7 @@
 #define BLACK_ON_CYAN  3
 #define WHITE_ON_GREEN 4
 #define BLACK_ON_GREY 5
+#define WHITE_ON_RED 6
 
 class Colors {
 public:
@@ -21,6 +22,7 @@ public:
         init_pair(BLACK_ON_CYAN, COLOR_BLACK, COLOR_CYAN);   // cursors
         init_pair(WHITE_ON_GREEN, COLOR_WHITE, COLOR_GREEN); // dialog window
         init_pair(BLACK_ON_GREY, COLOR_BLACK, COLOR_WHITE);  // dialog window
+        init_pair(WHITE_ON_RED, COLOR_WHITE, COLOR_RED);     // error/notification window
 
         // colorText, colorBackground, colorDirectory, colorSelection, colorFile, colorExeFile, colorArchive, colorLink, colorSocket, colorBroken
         // colorMenuText, colorMenuBackground, colorMenuInput, colorMenuSelection, colorMenuHot

@@ -8,6 +8,10 @@
 #include "WindowHelp.h"
 #include "WindowView.h"
 #include "WindowEdit.h"
+#include "WindowCopy.h"
+#include "WindowMove.h"
+#include "WindowCreate.h"
+#include "WindowDelete.h"
 #include "WindowExit.h"
 #include "Colors.h"
 #include "Directory.h"
@@ -133,13 +137,37 @@ void Workspace::show(int rows, int cols) {
                     }
                 }
                 break;
-            case KEY_F(5):
+            case KEY_F(5): {
+                    WindowCopy *w = new WindowCopy(rows/2, cols/2, 8, 60);
+                    w->draw(BLACK_ON_GREY);
+                    delete w;
+                    left->update();
+                    right->update();
+                }
                 break;
-            case KEY_F(6):
+            case KEY_F(6): {
+                    WindowMove *w = new WindowMove(rows/2, cols/2, 8, 60);
+                    w->draw(BLACK_ON_GREY);
+                    delete w;
+                    left->update();
+                    right->update();
+                }
                 break;
-            case KEY_F(7):
+            case KEY_F(7): {
+                    WindowCreate *w = new WindowCreate(rows/2, cols/2, 6, 60);
+                    w->draw(BLACK_ON_GREY);
+                    delete w;
+                    left->update();
+                    right->update();
+                }
                 break;
-            case KEY_F(8):
+            case KEY_F(8): {
+                    WindowDelete *w = new WindowDelete(rows/2, cols/2, 5, 40);
+                    w->draw(WHITE_ON_RED);
+                    delete w;
+                    left->update();
+                    right->update();
+                }
                 break;
             case KEY_F(9):
                 break;
@@ -183,9 +211,9 @@ void Workspace::show(int rows, int cols) {
                 break;
             case 20: // select file ^T
                 break;
-            case 61: // select files goup ^+
+            case 160: // select files goup alt+
                 break;
-            case 31: // unselect file group ^-
+            case 147: // unselect file group alt-
                 break;
             case 21: // swap panel ^U
                 break;
@@ -264,7 +292,7 @@ void Workspace::show(int rows, int cols) {
                 }
                 break;
             default:
-                if (keyname(c)[0] != '^' || c != 8)
+                if (c>=30 && c <=126)
                     cmd.push_back(c);
                 break;
         }
