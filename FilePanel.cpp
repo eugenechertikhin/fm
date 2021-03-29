@@ -46,6 +46,8 @@ FilePanel *FilePanel::getNext() {
 
 void FilePanel::setPath(std::string path) {
     this->path = path;
+    pos = 0;
+    offset = 0;
 }
 std::string FilePanel::getPath() {
     return path;
@@ -327,8 +329,14 @@ void FilePanel::rescanDirectory() {
 
     try {
         files = dir->getDirectory(path, config->isShowDot());
-    } catch (const std::exception &e) {
+        while (files->size() <= (pos+offset)) {
+            if (pos > 1)
+                pos--;
+            else
+                offset--;
+        }
 
+    } catch (const std::exception &e) {
         return;
     }
     sortDirectory(files);
@@ -431,33 +439,10 @@ void FilePanel::enter() {
     FileEntry *f = getCurrentFile();
     if (f->type == directory) {
 
-        std::string name;
         pos = 0;
         offset = 0;
         if (f->name == "..") {
-            size_t p = path.find_last_of("\\/");
-            std::string res = path.substr(0, p);
-            name = path.substr(p+1, path.size());
-            res.empty() ? path = "/" : path = res;
-
-            rescanDirectory();
-            bool found = false;
-            for (int i = 0; i < files->size(); i++) {
-                if (files->at(i)->name == name) {
-                    found = true;
-                    break;
-                }
-
-                if (pos < rowsCount-1)
-                    pos++;
-                else
-                    offset++;
-            }
-
-            if (!found) {
-                pos = 0;
-                offset = 0;
-            }
+            goBack();
         } else
             (path == "/") ? path.append(f->name) : path.append("/" + f->name);
 
@@ -467,4 +452,31 @@ void FilePanel::enter() {
     } else if (false) {
         // todo run file
     }
+}
+
+void FilePanel::goBack() {
+    size_t p = path.find_last_of("\\/");
+    std::string res = path.substr(0, p);
+    std::string name = path.substr(p+1, path.size());
+    res.empty() ? path = "/" : path = res;
+
+    rescanDirectory();
+    bool found = false;
+    for (int i = 0; i < files->size(); i++) {
+        if (files->at(i)->name == name) {
+            found = true;
+            break;
+        }
+
+        if (pos < rowsCount-1)
+            pos++;
+        else
+            offset++;
+    }
+
+    if (!found) {
+        pos = 0;
+        offset = 0;
+    }
+
 }

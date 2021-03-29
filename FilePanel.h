@@ -45,6 +45,7 @@ public:
     void moveLeft();
     void moveRight();
     void enter();
+    void goBack();
 
     FileEntry *getCurrentFile();
 

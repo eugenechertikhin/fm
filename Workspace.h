@@ -17,9 +17,6 @@ public:
 
 private:
     Config *config;
-
-//    std::vector<FilePanel> panels;
     FilePanel *current;
-
     std::string cmd;
 };

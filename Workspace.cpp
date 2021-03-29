@@ -15,6 +15,7 @@
 #include "WindowExit.h"
 #include "Colors.h"
 #include "Directory.h"
+#include "Utils.h"
 
 Workspace::Workspace(Config *pConfig) {
     config = pConfig;
@@ -77,7 +78,7 @@ void Workspace::show(int rows, int cols) {
             // functional
             case KEY_F(1): {
                     WindowHelp *w = new WindowHelp(5, 20, rows - 10, cols - 40);
-                    w->draw(WHITE_ON_BLUE);
+                    w->draw(BLACK_ON_GREY);
                     delete w;
                     left->update();
                     right->update();
@@ -264,16 +265,34 @@ void Workspace::show(int rows, int cols) {
                         current->enter();
                         break;
                     }
-                    endwin();
 
-                    std::string s = "cd " + current->getPath() + "; " + cmd;
-                    system(const_cast<char *>(s.c_str()));
+                    // check for some commands not requred escape to shell
+                    if (cmd.compare(0, 3, "cd ") == 0) {
+                        std::string path = cmd.substr(3, cmd.size());
+                        path = util::Utils::trim(path);
 
-                    if (config->isConfirmExecute()) {
-                        std::cout << "Press enter to continue...";
-                        fflush(stdout);
-                        getchar();
-                        fflush(stdin);
+                        if(path.rfind("..", 0) == 0) {
+                            current->goBack();
+                        } else if(path.rfind("/", 0) != 0) {
+                            current->setPath(current->getPath() + "/" + path);
+                        } else {
+                            current->setPath(path);
+                        }
+                    } else {
+                        endwin();
+
+                        std::cout << std::endl << "$ " << cmd << std::endl;
+                        std::string s = "cd " + current->getPath() + "; " + cmd;
+                        keypad(stdscr, false);
+                        system(const_cast<char *>(s.c_str()));
+                        keypad(stdscr, true);
+
+                        if (config->isConfirmExecute()) {
+                            std::cout << "Press enter to continue...";
+                            fflush(stdout);
+                            getchar();
+                            fflush(stdin);
+                        }
                     }
 
                     config->getHistory()->push_back(cmd);

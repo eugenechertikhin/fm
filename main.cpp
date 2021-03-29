@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     char cwd[PATH_MAX];
     config->setCurrentPath(getcwd(cwd, PATH_MAX));
 
-    system("stty cbreak -echo");
+//    system("stty cbreak -echo");
 
     // init screen and show workspace
     initscr();
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     delete config;
 
     endwin();
-    system("stty cooked echo");
+//    system("stty cooked echo");
 
     return 0;
 }
